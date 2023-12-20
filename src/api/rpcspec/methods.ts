@@ -39,28 +39,6 @@ import {
   TransactionWithHash,
 } from "./nonspec";
 
-export const INVOKE_TXN_V0 = {
-  type: "INVOKE",
-  max_fee: "FELT",
-  version: "0x0",
-  signature: "SIGNATURE",
-  contract_address: "ADDRESS",
-  entry_point_selector: "FELT",
-  calldata: "FELT[]",
-};
-
-export const INVOKE_TXN_V1 = {
-  type: "INVOKE",
-  sender_address: "ADDRESS",
-  calldata: "FELT[]",
-  max_fee: "FELT",
-  version: "NUM_AS_HEX",
-  signature: "SIGNATURE",
-  nonce: "FELT",
-};
-
-export const BROADCASTED_INVOKE_TXN = INVOKE_TXN_V0 || INVOKE_TXN_V1;
-
 const blockId = {
   placeholder: "latest",
   index: 0,
@@ -77,6 +55,40 @@ const blockId = {
     { name: "block_number", pattern: "[0-9]+", placeholder: "474703" },
   ],
 };
+
+const contract_address = {
+  placeholder:
+    "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7",
+  description: "The address of the contract",
+};
+
+const transaction_hash = {
+  placeholder:
+    "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11",
+  description: "The hash of the requested transaction",
+};
+
+export const INVOKE_TXN_V0 = {
+  type: "INVOKE",
+  max_fee: "FELT",
+  version: "0x0",
+  signature: "SIGNATURE",
+  contract_address,
+  entry_point_selector: "FELT",
+  calldata: "FELT[]",
+};
+
+export const INVOKE_TXN_V1 = {
+  type: "INVOKE",
+  sender_address: "ADDRESS",
+  calldata: "FELT[]",
+  max_fee: "FELT",
+  version: "NUM_AS_HEX",
+  signature: "SIGNATURE",
+  nonce: "FELT",
+};
+
+export const BROADCASTED_INVOKE_TXN = INVOKE_TXN_V0 || INVOKE_TXN_V1;
 
 const ReadMethods = [
   // Returns the version of the Starknet JSON-RPC specification being used
@@ -113,12 +125,10 @@ const ReadMethods = [
   {
     name: "starknet_getStorageAt",
     params: {
-      contract_address: {
-        placeholder:
-          "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7",
-        description: "The address of the contract",
+      contract_address,
+      key: {
+        placeholder: "",
       },
-      key: "STORAGE_KEY",
       blockId,
     },
   },
@@ -127,7 +137,7 @@ const ReadMethods = [
   {
     name: "starknet_getTransactionStatus",
     params: {
-      transaction_hash: "TXN_HASH",
+      transaction_hash,
     },
   },
 
@@ -135,7 +145,7 @@ const ReadMethods = [
   {
     name: "starknet_getTransactionByHash",
     params: {
-      transaction_hash: "TXN_HASH",
+      transaction_hash,
     },
   },
 
@@ -144,7 +154,10 @@ const ReadMethods = [
     name: "starknet_getTransactionByBlockIdAndIndex",
     params: {
       blockId,
-      index: "number",
+      index: {
+        placeholder: "0",
+        description: "The index of the transaction in the block",
+      },
     },
   },
 
@@ -152,7 +165,7 @@ const ReadMethods = [
   {
     name: "starknet_getTransactionReceipt",
     params: {
-      transaction_hash: "TXN_HASH",
+      transaction_hash,
     },
   },
 
@@ -170,7 +183,7 @@ const ReadMethods = [
     name: "starknet_getClassHashAt",
     params: {
       blockId,
-      contract_address: "ADDRESS",
+      contract_address,
     },
   },
 
@@ -179,7 +192,7 @@ const ReadMethods = [
     name: "starknet_getClassAt",
     params: {
       blockId,
-      contract_address: "ADDRESS",
+      contract_address,
     },
   },
 
@@ -255,7 +268,7 @@ const ReadMethods = [
     name: "starknet_getNonce",
     params: {
       blockId,
-      contract_address: "ADDRESS",
+      contract_address,
     },
   },
 ];
@@ -288,13 +301,15 @@ const TraceMethods = [
   // For a given executed transaction, return the trace of its execution, including internal calls
   {
     name: "starknet_traceTransaction",
-    params: { transaction_hash: "TXN_HASH" },
+    params: { transaction_hash },
   },
 
   // Returns the execution traces of all transactions included in the given block
   {
     name: "starknet_traceBlockTransactions",
-    params: { block_id: "BLOCK_ID" },
+    params: {
+      blockId: blockId,
+    },
   },
 
   // Simulate a given sequence of transactions on the requested state, and generate the execution traces. If one of the transactions is reverted, raises CONTRACT_ERROR
