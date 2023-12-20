@@ -61,6 +61,23 @@ export const INVOKE_TXN_V1 = {
 
 export const BROADCASTED_INVOKE_TXN = INVOKE_TXN_V0 || INVOKE_TXN_V1;
 
+const blockId = {
+  placeholder: "latest",
+  index: 0,
+  description:
+    "The hash of the requested block, or number (height) of the requested block, or a block tag",
+  oneOf: [
+    { name: "block_tag", enum: ["latest", "pending"], placeholder: "latest" },
+    {
+      name: "block_hash",
+      pattern: "0x[0-9a-fA-F]{64}",
+      placeholder:
+        "0x1926fe58c6750d786c352d448f3318e675ab1e866a9a728c66fa873675eb9fd",
+    },
+    { name: "block_number", pattern: "[0-9]+", placeholder: "474703" },
+  ],
+};
+
 const ReadMethods = [
   // Returns the version of the Starknet JSON-RPC specification being used
   {
@@ -72,7 +89,7 @@ const ReadMethods = [
   {
     name: "starknet_getBlockWithTxHashes",
     params: {
-      block_id: "BLOCK_ID",
+      blockId: blockId,
     },
   },
 
@@ -80,7 +97,7 @@ const ReadMethods = [
   {
     name: "starknet_getBlockWithTxs",
     params: {
-      block_id: "BLOCK_ID",
+      blockId: blockId,
     },
   },
 
@@ -88,7 +105,7 @@ const ReadMethods = [
   {
     name: "starknet_getStateUpdate",
     params: {
-      block_id: "BLOCK_ID",
+      blockId: blockId,
     },
   },
 
@@ -96,9 +113,13 @@ const ReadMethods = [
   {
     name: "starknet_getStorageAt",
     params: {
-      contract_address: "ADDRESS",
+      contract_address: {
+        placeholder:
+          "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7",
+        description: "The address of the contract",
+      },
       key: "STORAGE_KEY",
-      block_id: "BLOCK_ID",
+      blockId,
     },
   },
 
@@ -122,7 +143,7 @@ const ReadMethods = [
   {
     name: "starknet_getTransactionByBlockIdAndIndex",
     params: {
-      block_id: "BLOCK_ID",
+      blockId,
       index: "number",
     },
   },
@@ -139,7 +160,7 @@ const ReadMethods = [
   {
     name: "starknet_getClass",
     params: {
-      block_id: "BLOCK_ID",
+      blockId,
       class_hash: "FELT",
     },
   },
@@ -148,7 +169,7 @@ const ReadMethods = [
   {
     name: "starknet_getClassHashAt",
     params: {
-      block_id: "BLOCK_ID",
+      blockId,
       contract_address: "ADDRESS",
     },
   },
@@ -157,7 +178,7 @@ const ReadMethods = [
   {
     name: "starknet_getClassAt",
     params: {
-      block_id: "BLOCK_ID",
+      blockId,
       contract_address: "ADDRESS",
     },
   },
@@ -166,7 +187,7 @@ const ReadMethods = [
   {
     name: "starknet_getBlockTransactionCount",
     params: {
-      block_id: "BLOCK_ID",
+      blockId: blockId,
     },
   },
 
@@ -175,7 +196,7 @@ const ReadMethods = [
     name: "starknet_call",
     params: {
       request: "FUNCTION_CALL",
-      block_id: "BLOCK_ID",
+      blockId,
     },
   },
 
@@ -184,7 +205,7 @@ const ReadMethods = [
     name: "starknet_estimateFee",
     params: {
       request: "BROADCASTED_TXN[]", //TODO:
-      block_id: "BLOCK_ID",
+      blockId,
     },
   },
 
@@ -193,7 +214,7 @@ const ReadMethods = [
     name: "starknet_estimateMessageFee",
     params: {
       message: "MSG_FROM_L1",
-      block_id: "BLOCK_ID",
+      blockId,
     },
   },
 
@@ -233,7 +254,7 @@ const ReadMethods = [
   {
     name: "starknet_getNonce",
     params: {
-      block_id: "BLOCK_ID",
+      blockId,
       contract_address: "ADDRESS",
     },
   },
@@ -247,20 +268,20 @@ const WriteMethods = [
   },
 
   // Submit a new class declaration transaction
-  // {
-  //   name: "starknet_addDeclareTransaction",
-  //   params: {
-  //     declare_transaction: "BROADCASTED_DECLARE_TXN",
-  //   },
-  // },
+  {
+    name: "starknet_addDeclareTransaction",
+    params: {
+      declare_transaction: "BROADCASTED_DECLARE_TXN",
+    },
+  },
 
-  // // Submit a new deploy account transaction
-  // {
-  //   name: "starknet_addDeployAccountTransaction",
-  //   params: {
-  //     deploy_account_transaction: "BROADCASTED_DEPLOY_ACCOUNT_TXN",
-  //   },
-  // },
+  // Submit a new deploy account transaction
+  {
+    name: "starknet_addDeployAccountTransaction",
+    params: {
+      deploy_account_transaction: "BROADCASTED_DEPLOY_ACCOUNT_TXN",
+    },
+  },
 ];
 
 const TraceMethods = [
@@ -280,11 +301,11 @@ const TraceMethods = [
   {
     name: "starknet_simulateTransactions",
     params: {
-      block_id: "BLOCK_ID",
+      blockId,
       transactions: Array<BROADCASTED_TXN>,
       simulation_flags: Array<SIMULATION_FLAG>,
     },
   },
 ];
 
-export const Methods = ReadMethods.concat(TraceMethods);
+export const Methods = [...ReadMethods, ...WriteMethods, ...TraceMethods];
