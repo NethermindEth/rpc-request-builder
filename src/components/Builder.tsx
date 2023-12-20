@@ -68,6 +68,7 @@ const Builder = () => {
     Methods[0].params ? transformParamsToArray(Methods[0].params) : []
   );
   const [rpcUrl, setRpcUrl] = useState(MAINNET_RPC_URL);
+  const [useCustomRpcUrl, setUseCustomRpcUrl] = useState(false);
 
   const [requestTab, setRequestTab] = useState("raw");
   const [starknetJs, setStarknetJs] = useState(DEFAULT_STARKNET_JS_REQUEST);
@@ -170,17 +171,45 @@ const Builder = () => {
         <div className="w-1/3 p-3">
           <h2 className="my-2 text-lg">Configure Request</h2>
           <div className="my-5">
-            <select
-              onChange={(e) => {
-                setRpcUrl(e.target.value);
-                updateCurlRpcUrl(e.target.value);
-              }}
-              className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full"
-            >
-              <option value={MAINNET_RPC_URL}>Mainnet</option>
-              <option value={GOERLI_RPC_URL}>Goerli</option>
-              <option value={SEPOLIA_RPC_URL}>Sepolia</option>
-            </select>
+            {useCustomRpcUrl ? (
+              <div>
+                <input
+                  onChange={(e) => {
+                    setRpcUrl(e.target.value);
+                    updateCurlRpcUrl(e.target.value);
+                  }}
+                  className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full"
+                  defaultValue={rpcUrl}
+                />
+                <p
+                  onClick={() => setUseCustomRpcUrl(!useCustomRpcUrl)}
+                  className="text-xs my-3 text-cyan-400 cursor-pointer"
+                >
+                  Use default RPC URL
+                </p>
+              </div>
+            ) : (
+              <div>
+                <select
+                  onChange={(e) => {
+                    setRpcUrl(e.target.value);
+                    updateCurlRpcUrl(e.target.value);
+                  }}
+                  className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full"
+                >
+                  <option value={MAINNET_RPC_URL}>Mainnet</option>
+                  <option value={GOERLI_RPC_URL}>Goerli</option>
+                  <option value={SEPOLIA_RPC_URL}>Sepolia</option>
+                </select>
+                <p
+                  onClick={() => setUseCustomRpcUrl(!useCustomRpcUrl)}
+                  className="text-xs my-3 text-cyan-400 cursor-pointer"
+                >
+                  Use custom RPC URL
+                </p>
+              </div>
+            )}
+
             <select
               onChange={(e) => {
                 const index = parseInt(e.target.value);
