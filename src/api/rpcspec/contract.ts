@@ -12,7 +12,7 @@ export type ABI = Array<
 >;
 
 type FUNCTION = {
-  type: 'function';
+  type: "function";
   name: string;
   inputs: Array<{
     name: string;
@@ -21,12 +21,12 @@ type FUNCTION = {
   outputs?: Array<{
     type: string;
   }>;
-  state_mutability: 'view' | 'external';
+  state_mutability: "view" | "external";
 };
 
 type CONSTRUCTOR = {
-  type: 'constructor';
-  name: 'constructor';
+  type: "constructor";
+  name: "constructor";
   inputs: Array<{
     name: string;
     type: string;
@@ -34,7 +34,7 @@ type CONSTRUCTOR = {
 };
 
 type L1_HANDLER = {
-  type: 'l1_handler';
+  type: "l1_handler";
   name: string;
   inputs: Array<{
     name: string;
@@ -43,26 +43,26 @@ type L1_HANDLER = {
   outputs?: Array<{
     type: string;
   }>;
-  state_mutability: 'view' | 'external';
+  state_mutability: "view" | "external";
 };
 
 type EVENT = {
-  type: 'event';
+  type: "event";
   name: string;
 } & (ENUM_EVENT | STRUCT_EVENT);
 
 type STRUCT_EVENT = {
-  kind: 'struct';
+  kind: "struct";
   members: Array<EVENT_FIELD>;
 };
 
 type ENUM_EVENT = {
-  kind: 'enum';
+  kind: "enum";
   variants: Array<EVENT_FIELD>;
 };
 
 type STRUCT = {
-  type: 'struct';
+  type: "struct";
   name: string;
   members: Array<{
     name: string;
@@ -71,7 +71,7 @@ type STRUCT = {
 };
 
 type ENUM = {
-  type: 'enum';
+  type: "enum";
   name: string;
   variants: Array<{
     name: string;
@@ -80,22 +80,21 @@ type ENUM = {
 };
 
 type INTERFACE = {
-  type: 'interface';
+  type: "interface";
   name: string;
   items: Array<FUNCTION>;
 };
 
 type IMPL = {
-  type: 'impl';
+  type: "impl";
   name: string;
   interface_name: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type EVENT_KIND = 'struct' | 'enum';
+type EVENT_KIND = "struct" | "enum";
 
 type EVENT_FIELD = {
   name: string;
   type: string;
-  kind: 'key' | 'data' | 'nested';
+  kind: "key" | "data" | "nested";
 };
