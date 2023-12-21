@@ -2,9 +2,9 @@ export const MAINNET_RPC_URL = "https://free-rpc.nethermind.io/mainnet-juno/";
 export const GOERLI_RPC_URL = "https://free-rpc.nethermind.io/goerli-juno/";
 export const SEPOLIA_RPC_URL = "https://free-rpc.nethermind.io/sepolia-juno/";
 export const DEFAULT_STARKNET_JS_REQUEST = `// Installation Instructions: https://https://www.starknetjs.com/
-const starknet = require('starknet');
+const { RpcProvider } = require('starknet');
 
-const provider = new starknet.RpcProvider({
+const provider = new RpcProvider({
     nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
 })
 

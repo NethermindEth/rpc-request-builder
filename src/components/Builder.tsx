@@ -94,17 +94,27 @@ const Builder = () => {
     }
   };
 
-  const updateCurlRpcUrl = (newRpcUrl: string) => {
+  const updateRpcUrl = (newRpcUrl: string, oldRpcUrl: string) => {
     // remove everything before the first \
     let dataPart = curlRequest.split("\\")[1];
     let urlPart = `curl --location '${newRpcUrl}' \\`;
 
     let newCurlRequest = urlPart + dataPart;
     setCurlRequest(newCurlRequest);
+
+    // Replace oldRpcUrl with newRpcUrl
+    let newStarknetJs = starknetJs.replace(oldRpcUrl, newRpcUrl);
+    setStarknetJs(newStarknetJs);
+
+    // update all methods as well
+    Methods.forEach((method) => {
+      let newStarknetJs = method.starknetJs.replace(oldRpcUrl, newRpcUrl);
+      method.starknetJs = newStarknetJs;
+    });
     return newCurlRequest;
   };
 
-  const constructParams = (methodName: string, latestParamsArray: any) => {
+  const constructParams = (latestParamsArray: any) => {
     let params: any = [];
     latestParamsArray.forEach((param: any) => {
       if (param.value?.value?.length > 0) {
@@ -151,7 +161,7 @@ const Builder = () => {
       const jsonObject = {
         jsonrpc: "2.0",
         method: methodName,
-        params: constructParams(methodName, latestParamsArray),
+        params: constructParams(latestParamsArray),
         id: 1,
       };
       const jsonDataString = JSON.stringify(jsonObject, null, 4);
@@ -160,6 +170,7 @@ const Builder = () => {
       const curlCommand = `${curlPart}--data '${jsonDataString}'`;
       setRawRequest(jsonDataString);
       setCurlRequest(curlCommand);
+      setStarknetJs(method.starknetJs);
     };
 
     updateMethod(method.name, paramsArray);
@@ -175,8 +186,9 @@ const Builder = () => {
               <div>
                 <input
                   onChange={(e) => {
+                    let oldRpcUrl = rpcUrl;
                     setRpcUrl(e.target.value);
-                    updateCurlRpcUrl(e.target.value);
+                    updateRpcUrl(e.target.value, oldRpcUrl);
                   }}
                   className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full"
                   defaultValue={rpcUrl}
@@ -192,8 +204,9 @@ const Builder = () => {
               <div>
                 <select
                   onChange={(e) => {
+                    let oldRpcUrl = rpcUrl;
                     setRpcUrl(e.target.value);
-                    updateCurlRpcUrl(e.target.value);
+                    updateRpcUrl(e.target.value, oldRpcUrl);
                   }}
                   className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full"
                 >
