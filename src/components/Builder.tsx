@@ -261,9 +261,17 @@ const Builder = () => {
                           const updatedParamsArray = [...prevParamsArray];
                           const selectedIndex =
                             updatedParamsArray[index].value.index;
+                          let value: string | number =
+                            updatedParamsArray[index].value.value[selectedIndex]
+                              .placeholder;
+                          if (typeof value == "number") {
+                            value = parseInt(e.target.value);
+                          } else {
+                            value = e.target.value;
+                          }
                           updatedParamsArray[index].value.value[
                             selectedIndex
-                          ].placeholder = e.target.value;
+                          ].placeholder = value;
                           return updatedParamsArray;
                         });
                       }}

@@ -18,26 +18,6 @@ import {
   STORAGE_KEY,
   TXN_HASH,
 } from "./components";
-import * as Errors from "./errors";
-import {
-  BlockHashAndNumber,
-  BlockTransactionsTraces,
-  BlockWithTxHashes,
-  BlockWithTxs,
-  ContractClass,
-  DeclaredTransaction,
-  DeployedAccountTransaction,
-  Events,
-  FeeEstimate,
-  InvokedTransaction,
-  Nonce,
-  SimulateTransactionResponse,
-  Syncing,
-  TransactionReceipt,
-  TransactionStatus,
-  TransactionTrace,
-  TransactionWithHash,
-} from "./nonspec";
 
 const blockId = {
   placeholder: "latest",
@@ -52,7 +32,7 @@ const blockId = {
       placeholder:
         "0x1926fe58c6750d786c352d448f3318e675ab1e866a9a728c66fa873675eb9fd",
     },
-    { name: "block_number", pattern: "[0-9]+", placeholder: "474703" },
+    { name: "block_number", pattern: "[0-9]+", placeholder: 474703 },
   ],
 };
 
