@@ -129,11 +129,50 @@ const Builder = () => {
           params.push(p);
         }
       } else {
-        params.push(param.value?.placeholder || "");
+        params.push(param.value?.placeholder);
       }
     });
 
     return params;
+  };
+
+  const updateStarknetJsParams = (currentParamsArray: Array<any>) => {
+    const regexPattern = /provider\.(\w+)\(([^)]*)\)/;
+    const codeSnippet = method.starknetJs;
+
+    // Replace the captured parameters with newParams
+    const updatedCode = codeSnippet.replace(
+      regexPattern,
+      (match, methodName, params) => {
+        const values = currentParamsArray.map((item) => {
+          // Check if the item is an object
+          if (item && typeof item === "object" && !Array.isArray(item)) {
+            const objectItem = Object.values(item)[0];
+            console.log(objectItem);
+            if (typeof objectItem === "string") {
+              return `"${Object.values(item)}"`;
+            } else if (typeof objectItem === "number") {
+              return Object.values(item);
+            }
+            return objectItem;
+          } else {
+            console.log(item);
+            console.log(typeof item);
+            if (item && typeof item === "string") {
+              return `"${item}"`;
+            }
+            return item;
+          }
+        });
+
+        console.log(values);
+        let stringifiedParams = values.join(", ");
+
+        return `provider.${methodName}(${stringifiedParams})`;
+      }
+    );
+
+    return updatedCode;
   };
 
   const sendRequest = async () => {
@@ -148,8 +187,6 @@ const Builder = () => {
     setResponse(JSON.stringify(json, null, 2));
   };
 
-  const updateStarknetJsParams = () => {};
-
   useEffect(() => {
     const responseJSON = JSON.parse(response);
     const decodedResponseJSON = responseJSON.result
@@ -160,20 +197,21 @@ const Builder = () => {
 
   useEffect(() => {
     const updateMethod = (methodName: string, latestParamsArray: any) => {
+      const params = constructParams(latestParamsArray);
       const jsonObject = {
         jsonrpc: "2.0",
         method: methodName,
-        params: constructParams(latestParamsArray),
+        params,
         id: 1,
       };
       const jsonDataString = JSON.stringify(jsonObject, null, 4);
 
       const curlPart = `curl --location '${rpcUrl}' \\\n`;
       const curlCommand = `${curlPart}--data '${jsonDataString}'`;
-      const newStarknetJsParams = updateStarknetJsParams();
+      const newStarknetJsParams = updateStarknetJsParams(params);
       setRawRequest(jsonDataString);
       setCurlRequest(curlCommand);
-      setStarknetJs(method.starknetJs);
+      setStarknetJs(newStarknetJsParams);
     };
 
     updateMethod(method.name, paramsArray);
@@ -302,8 +340,14 @@ const Builder = () => {
                     onChange={(e) => {
                       setParamsArray((prevParamsArray) => {
                         const updatedParamsArray = [...prevParamsArray];
-                        updatedParamsArray[index].value.placeholder =
-                          e.target.value;
+                        let value: string | number =
+                          updatedParamsArray[index].value.placeholder;
+                        if (typeof value == "number") {
+                          value = parseInt(e.target.value);
+                        } else {
+                          value = e.target.value;
+                        }
+                        updatedParamsArray[index].value.placeholder = value;
                         return updatedParamsArray;
                       });
                     }}
@@ -341,12 +385,14 @@ const Builder = () => {
                 >
                   cURL
                 </li>
-                <li
-                  onClick={() => setRequestTab("starknetJs")}
-                  className="p-3 cursor-pointer"
-                >
-                  starknet.js
-                </li>
+                {method.starknetJs && (
+                  <li
+                    onClick={() => setRequestTab("starknetJs")}
+                    className="p-3 cursor-pointer"
+                  >
+                    starknet.js
+                  </li>
+                )}
               </ul>
               <div className="bg-[#1e1e1e]">
                 <button

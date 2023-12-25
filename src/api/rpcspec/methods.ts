@@ -299,8 +299,7 @@ const ReadMethods = [
       ],
       blockId,
     },
-    starknetJs: `
-    `,
+    starknetJs: ``,
   },
 
   // Estimate the L2 fee of a message sent on L1
@@ -318,8 +317,7 @@ const ReadMethods = [
       },
       blockId,
     },
-    starknetJs: `
-    `,
+    starknetJs: ``,
   },
 
   // Get the most recent accepted block number
