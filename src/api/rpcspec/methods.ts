@@ -1,23 +1,11 @@
-import {
-  ADDRESS,
-  BLOCK_ID,
-  BLOCK_NUMBER,
-  BROADCASTED_DECLARE_TXN,
-  BROADCASTED_DEPLOY_ACCOUNT_TXN,
-  // BROADCASTED_INVOKE_TXN,
-  BROADCASTED_TXN,
-  CHAIN_ID,
-  EVENT_FILTER,
-  FELT,
-  FUNCTION_CALL,
-  MSG_FROM_L1,
-  PENDING_STATE_UPDATE,
-  RESULT_PAGE_REQUEST,
-  SIMULATION_FLAG,
-  STATE_UPDATE,
-  STORAGE_KEY,
-  TXN_HASH,
-} from "./components";
+const STARKNET_JS_PREFIX = `// Installation Instructions: https://https://www.starknetjs.com/
+const { RpcProvider } = require('starknet');
+
+const provider = new RpcProvider({
+    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
+})
+
+`;
 
 const blockId = {
   placeholder: "latest",
@@ -48,32 +36,55 @@ const transaction_hash = {
   description: "The hash of the requested transaction",
 };
 
-const entry_point_selector = {};
+const entry_point_selector = {
+  placeholder: "name",
+  description: "The name of the function to call",
+};
+const calldata = {
+  placeholder: [],
+  description: "The calldata to send with the function call",
+};
 
 const functionCall = {
   contract_address,
   entry_point_selector,
-  // calldata: FELT[];
+  calldata,
+};
+
+const version = {
+  placeholder: "0x0",
+  description: "The version of the transaction",
+};
+
+const max_fee = {
+  placeholder: "0x0",
+  description: "The maximum fee the sender is willing to pay",
 };
 
 export const INVOKE_TXN_V0 = {
-  type: "INVOKE",
-  max_fee: "FELT",
-  version: "0x0",
-  signature: "SIGNATURE",
+  type: {
+    placeholder: "INVOKE",
+  },
+  max_fee,
+  version,
+  signature: {},
   contract_address,
   entry_point_selector,
-  calldata: "FELT[]",
+  calldata,
 };
 
 export const INVOKE_TXN_V1 = {
-  type: "INVOKE",
-  sender_address: "ADDRESS",
-  calldata: "FELT[]",
-  max_fee: "FELT",
-  version: "NUM_AS_HEX",
-  signature: "SIGNATURE",
-  nonce: "FELT",
+  type: {
+    placeholder: "INVOKE",
+  },
+  sender_address: contract_address,
+  calldata,
+  max_fee,
+  version,
+  signature: {},
+  nonce: {
+    placeholder: "0x0",
+  },
 };
 
 export const BROADCASTED_INVOKE_TXN = INVOKE_TXN_V0 || INVOKE_TXN_V1;
@@ -83,14 +94,7 @@ const ReadMethods = [
   {
     name: "starknet_specVersion",
     params: [],
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getSpecVersion().then(specVersion => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getSpecVersion().then(specVersion => {
     console.log(specVersion);
 });
     `,
@@ -102,14 +106,7 @@ provider.getSpecVersion().then(specVersion => {
     params: {
       blockId: blockId,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getBlockWithTxHashes("latest").then(block => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockWithTxHashes("latest").then(block => {
   console.log(block);
 });
     `,
@@ -121,14 +118,7 @@ provider.getBlockWithTxHashes("latest").then(block => {
     params: {
       blockId: blockId,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getBlockWithTxs("latest").then(block => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockWithTxs("latest").then(block => {
   console.log(block);
 });
     `,
@@ -140,14 +130,7 @@ provider.getBlockWithTxs("latest").then(block => {
     params: {
       blockId: blockId,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getBlockStateUpdate("latest").then(stateUpdate => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockStateUpdate("latest").then(stateUpdate => {
     console.log(stateUpdate);
 });
     `,
@@ -165,14 +148,7 @@ provider.getBlockStateUpdate("latest").then(stateUpdate => {
       },
       blockId,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getStorageAt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49", "0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e", "latest").then(storage => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getStorageAt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49", "0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e", "latest").then(storage => {
     console.log(storage);
 });
     `,
@@ -184,14 +160,7 @@ provider.getStorageAt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec900915
     params: {
       transaction_hash,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getTransactionStatus("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11").then(transactionStatus => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getTransactionStatus("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11").then(transactionStatus => {
     console.log(transactionStatus);
 });
     `,
@@ -203,14 +172,7 @@ provider.getTransactionStatus("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885
     params: {
       transaction_hash,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getTransactionByHash("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11").then(transaction => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getTransactionByHash("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11").then(transaction => {
   console.log(transaction);
 });
     `,
@@ -226,17 +188,10 @@ provider.getTransactionByHash("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885
         description: "The index of the transaction in the block",
       },
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-  const { RpcProvider } = require('starknet');
-  
-  const provider = new RpcProvider({
-      nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-  })
-  
-  provider.getTransactionByBlockIdAndIndex("latest", 0).then(transaction => {
-    console.log(transaction);
-  });
-      `,
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getTransactionByBlockIdAndIndex("latest", 0).then(transaction => {
+  console.log(transaction);
+});
+    `,
   },
 
   // Get the transaction receipt by the transaction hash
@@ -245,17 +200,10 @@ provider.getTransactionByHash("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885
     params: {
       transaction_hash,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-  const { RpcProvider } = require('starknet');
-  
-  const provider = new RpcProvider({
-      nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-  })
-  
-  provider.getTransactionReceipt("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11").then(transactionReceipt => {
-    console.log(transactionReceipt);
-  });
-      `,
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getTransactionReceipt("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11").then(transactionReceipt => {
+  console.log(transactionReceipt);
+});
+    `,
   },
 
   // Get the contract class definition in the given block associated with the given hash
@@ -269,14 +217,7 @@ provider.getTransactionByHash("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885
         description: "The hash of the contract class",
       },
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getClass("latest", "0x07fc0b6ecc96a698cdac8c4ae447816d73bffdd9603faacffc0a8047149d02ed").then(class => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getClass("latest", "0x07fc0b6ecc96a698cdac8c4ae447816d73bffdd9603faacffc0a8047149d02ed").then(class => {
     console.log(class);
 });
     `,
@@ -289,14 +230,7 @@ provider.getClass("latest", "0x07fc0b6ecc96a698cdac8c4ae447816d73bffdd9603faacff
       blockId,
       contract_address,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getClassHashAt("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7").then(classHash => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getClassHashAt("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7").then(classHash => {
     console.log(classHash);
 });
     `,
@@ -309,14 +243,7 @@ provider.getClassHashAt("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7
       blockId,
       contract_address,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getClassAt("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7").then(class => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getClassAt("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7").then(class => {
     console.log(class);
 });
     `,
@@ -328,14 +255,7 @@ provider.getClassAt("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741
     params: {
       blockId: blockId,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getBlockTransactionCount("latest").then(transactionCount => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockTransactionCount("latest").then(transactionCount => {
     console.log(transactionCount);
 });
     `,
@@ -345,7 +265,7 @@ provider.getBlockTransactionCount("latest").then(transactionCount => {
   {
     name: "starknet_call",
     params: {
-      request: "FUNCTION_CALL",
+      request: functionCall,
       blockId,
     },
     starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
@@ -355,8 +275,12 @@ provider.getBlockTransactionCount("latest").then(transactionCount => {
         nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
     })
     
-    provider.getSpecVersion().then(specVersion => {
-        console.log(specVersion);
+    provider.callContract({
+      contractAddress: "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
+      entrypoint: 'name',
+      calldata: [],
+    }).then(response => {
+        console.log(response);
     });
     `,
   },
@@ -365,19 +289,17 @@ provider.getBlockTransactionCount("latest").then(transactionCount => {
   {
     name: "starknet_estimateFee",
     params: {
-      request: "BROADCASTED_TXN[]", //TODO:
+      request: [BROADCASTED_INVOKE_TXN], //TODO:
+      simulation_flags: [
+        {
+          placeholder: "SKIP_VALIDATE",
+          description:
+            "Flags that indicate how to simulate a given transaction. By default, the sequencer behavior is replicated locally",
+        },
+      ],
       blockId,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-    const { RpcProvider } = require('starknet');
-    
-    const provider = new RpcProvider({
-        nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-    })
-    
-    provider.getSpecVersion().then(specVersion => {
-        console.log(specVersion);
-    });
+    starknetJs: `
     `,
   },
 
@@ -385,19 +307,18 @@ provider.getBlockTransactionCount("latest").then(transactionCount => {
   {
     name: "starknet_estimateMessageFee",
     params: {
-      message: "MSG_FROM_L1",
+      message: {
+        from_address: contract_address,
+        to_address: contract_address,
+        entry_point_selector,
+        payload: {
+          placeholder: "",
+          description: "The payload of the message",
+        },
+      },
       blockId,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getSpecVersion().then(specVersion => {
-    console.log(specVersion);
-});
+    starknetJs: `
     `,
   },
 
@@ -405,14 +326,7 @@ provider.getSpecVersion().then(specVersion => {
   {
     name: "starknet_blockNumber",
     params: [],
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getBlockNumber().then(blockNumber => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockNumber().then(blockNumber => {
     console.log(blockNumber);
 });
     `,
@@ -422,14 +336,7 @@ provider.getBlockNumber().then(blockNumber => {
   {
     name: "starknet_blockHashAndNumber",
     params: [],
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getBlockLatestAccepted().then(blockHashAndNumber => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockLatestAccepted().then(blockHashAndNumber => {
     console.log(blockHashAndNumber);
 });
     `,
@@ -439,14 +346,7 @@ provider.getBlockLatestAccepted().then(blockHashAndNumber => {
   {
     name: "starknet_chainId",
     params: [],
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getChainId().then(chainId => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getChainId().then(chainId => {
     console.log(chainId);
 });
     `,
@@ -456,14 +356,7 @@ provider.getChainId().then(chainId => {
   {
     name: "starknet_syncing",
     params: [],
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getSyncingStats().then(syncing => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getSyncingStats().then(syncing => {
     console.log(syncing);
 });
     `,
@@ -493,14 +386,7 @@ provider.getSyncingStats().then(syncing => {
         },
       },
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider
+    starknetJs: `${STARKNET_JS_PREFIX}provider
   .getEvents({
     from_block: { block_number: 0 },
     to_block: "latest",
@@ -524,90 +410,46 @@ provider
       blockId,
       contract_address,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getNonceForAddress("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7").then(nonce => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getNonceForAddress("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7").then(nonce => {
     console.log(nonce);
 });
     `,
   },
 ];
 
-const WriteMethods = [
-  // Submit a new transaction to be added to the chain
-  {
-    name: "starknet_addInvokeTransaction",
-    params: BROADCASTED_INVOKE_TXN,
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
+// const WriteMethods = [
+//   // Submit a new transaction to be added to the chain
+//   {
+//     name: "starknet_addInvokeTransaction",
+//     // params: BROADCASTED_INVOKE_TXN,
+//     starknetJs: ``,
+//   },
 
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
+//   // Submit a new class declaration transaction
+//   {
+//     name: "starknet_addDeclareTransaction",
+//     // params: {
+//     //   declare_transaction: BROADCASTED_DECLARE_TXN,
+//     // },
+//     starknetJs: ``,
+//   },
 
-provider.getSpecVersion().then(specVersion => {
-    console.log(specVersion);
-});
-    `,
-  },
-
-  // Submit a new class declaration transaction
-  {
-    name: "starknet_addDeclareTransaction",
-    params: {
-      declare_transaction: "BROADCASTED_DECLARE_TXN",
-    },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getSpecVersion().then(specVersion => {
-    console.log(specVersion);
-});
-    `,
-  },
-
-  // Submit a new deploy account transaction
-  {
-    name: "starknet_addDeployAccountTransaction",
-    params: {
-      deploy_account_transaction: "BROADCASTED_DEPLOY_ACCOUNT_TXN",
-    },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getSpecVersion().then(specVersion => {
-    console.log(specVersion);
-});
-    `,
-  },
-];
+//   // Submit a new deploy account transaction
+//   {
+//     name: "starknet_addDeployAccountTransaction",
+//     // params: {
+//     //   deploy_account_transaction: BROADCASTED_DEPLOY_ACCOUNT_TXN,
+//     // },
+//     starknetJs: ` `,
+//   },
+// ];
 
 const TraceMethods = [
   // For a given executed transaction, return the trace of its execution, including internal calls
   {
     name: "starknet_traceTransaction",
     params: { transaction_hash },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getTransactionTrace("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11").then(transactionTrace => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getTransactionTrace("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11").then(transactionTrace => {
     console.log(transactionTrace);
 });
     `,
@@ -619,39 +461,31 @@ provider.getTransactionTrace("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c
     params: {
       blockId: blockId,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-const { RpcProvider } = require('starknet');
-
-const provider = new RpcProvider({
-    nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-})
-
-provider.getBlockTransactionsTraces("latest").then(transactionTraces => {
+    starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockTransactionsTraces("latest").then(transactionTraces => {
     console.log(transactionTraces);
 });
     `,
   },
 
   // Simulate a given sequence of transactions on the requested state, and generate the execution traces. If one of the transactions is reverted, raises CONTRACT_ERROR
-  {
-    name: "starknet_simulateTransactions",
-    params: {
-      blockId,
-      transactions: Array<BROADCASTED_TXN>,
-      simulation_flags: Array<SIMULATION_FLAG>,
-    },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-    const { RpcProvider } = require('starknet');
-    
-    const provider = new RpcProvider({
-        nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-    })
-    
-    provider.getSpecVersion().then(specVersion => {
-        console.log(specVersion);
-    });
-    `,
-  },
+  // {
+  //   name: "starknet_simulateTransactions",
+  //   params: {
+  //     blockId,
+  //     transactions: Array<BROADCASTED_TXN>,
+  //     simulation_flags: {
+
+  //     },
+  //   },
+  //   starknetJs: `
+  //   `,
+  // },
 ];
 
-export const Methods = [...ReadMethods, ...WriteMethods, ...TraceMethods];
+export const Methods = [...ReadMethods, ...TraceMethods];
+export const comingSoon = [
+  "starknet_addInvokeTransaction",
+  "starknet_addDeclareTransaction",
+  "starknet_addDeployAccountTransaction",
+  "starknet_simulateTransactions",
+];

@@ -148,6 +148,8 @@ const Builder = () => {
     setResponse(JSON.stringify(json, null, 2));
   };
 
+  const updateStarknetJsParams = () => {};
+
   useEffect(() => {
     const responseJSON = JSON.parse(response);
     const decodedResponseJSON = responseJSON.result
@@ -168,6 +170,7 @@ const Builder = () => {
 
       const curlPart = `curl --location '${rpcUrl}' \\\n`;
       const curlCommand = `${curlPart}--data '${jsonDataString}'`;
+      const newStarknetJsParams = updateStarknetJsParams();
       setRawRequest(jsonDataString);
       setCurlRequest(curlCommand);
       setStarknetJs(method.starknetJs);
