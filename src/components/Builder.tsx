@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Chain } from "./types";
 import { Methods } from "@/api/rpcspec";
 import Editor from "@monaco-editor/react";
 import {
@@ -14,7 +13,7 @@ import {
   DEFAULT_RAW_RESPONSE,
   DEFAULT_DECODED_RESPONSE,
 } from "./constant";
-import { send } from "process";
+import { selector } from "starknet";
 
 const formatName = (name: string) => {
   // Make first letter uppercase
@@ -46,6 +45,20 @@ const Builder = () => {
             value: [],
           };
         }
+      } else if (!param.placeholder && !param.description) {
+        let params = [];
+        for (const [key, value] of Object.entries(param)) {
+          params.push({
+            name: key,
+            value: {
+              description: (value as any).description,
+              placeholder: (value as any).placeholder,
+              value: [],
+            },
+          });
+        }
+        console.log(params);
+        return params;
       }
       return {};
     };
@@ -117,14 +130,33 @@ const Builder = () => {
   const constructParams = (latestParamsArray: any) => {
     let params: any = [];
     latestParamsArray.forEach((param: any) => {
-      if (param.value?.value?.length > 0) {
+      if (Array.isArray(param.value)) {
+        let p = {};
+        param.value.forEach((val: any) => {
+          let placeholder = val.value?.placeholder;
+          if (val.value?.name == "entry_point_selector") {
+            placeholder = selector.getSelectorFromName(placeholder);
+          }
+
+          p = {
+            ...p,
+            [val.name]: placeholder,
+          };
+        });
+        params.push(p);
+      } else if (param.value?.value?.length > 0) {
         const selectedOption = param.value?.value[param?.value?.index];
         const isEnum = selectedOption.enum ? true : false;
         if (isEnum) {
           params.push(selectedOption.placeholder);
         } else {
+          let placeholder = selectedOption.placeholder;
+          if (selectedOption.name == "entry_point_selector") {
+            placeholder = selector.getSelectorFromName(placeholder);
+          }
+
           const p = {
-            [selectedOption.name]: selectedOption.placeholder,
+            [selectedOption.name]: placeholder,
           };
           params.push(p);
         }
@@ -132,47 +164,8 @@ const Builder = () => {
         params.push(param.value?.placeholder);
       }
     });
-
+    console.log(params);
     return params;
-  };
-
-  const updateStarknetJsParams = (currentParamsArray: Array<any>) => {
-    const regexPattern = /provider\.(\w+)\(([^)]*)\)/;
-    const codeSnippet = method.starknetJs;
-
-    // Replace the captured parameters with newParams
-    const updatedCode = codeSnippet.replace(
-      regexPattern,
-      (match, methodName, params) => {
-        const values = currentParamsArray.map((item) => {
-          // Check if the item is an object
-          if (item && typeof item === "object" && !Array.isArray(item)) {
-            const objectItem = Object.values(item)[0];
-            console.log(objectItem);
-            if (typeof objectItem === "string") {
-              return `"${Object.values(item)}"`;
-            } else if (typeof objectItem === "number") {
-              return Object.values(item);
-            }
-            return objectItem;
-          } else {
-            console.log(item);
-            console.log(typeof item);
-            if (item && typeof item === "string") {
-              return `"${item}"`;
-            }
-            return item;
-          }
-        });
-
-        console.log(values);
-        let stringifiedParams = values.join(", ");
-
-        return `provider.${methodName}(${stringifiedParams})`;
-      }
-    );
-
-    return updatedCode;
   };
 
   const sendRequest = async () => {
@@ -196,6 +189,46 @@ const Builder = () => {
   }, [response]);
 
   useEffect(() => {
+    const updateStarknetJsParams = (currentParamsArray: Array<any>) => {
+      const regexPattern = /provider\.(\w+)\(([^)]*)\)/;
+      const codeSnippet = method.starknetJs;
+
+      const updatedCode = codeSnippet.replace(
+        regexPattern,
+        (match, methodName, params) => {
+          console.log(currentParamsArray);
+          const values = currentParamsArray.map((item) => {
+            // Check if the item is an object
+            if (item && typeof item === "object" && !Array.isArray(item)) {
+              const objectItem = Object.values(item)[0];
+              console.log(objectItem, item, Object.keys(item));
+              if (typeof objectItem === "string") {
+                return `"${Object.values(item)}"`;
+              } else if (typeof objectItem === "number") {
+                return Object.values(item);
+              }
+              console.log(item);
+              return item;
+            } else {
+              console.log(item);
+              console.log(typeof item);
+              if (item && typeof item === "string") {
+                return `"${item}"`;
+              }
+              return item;
+            }
+          });
+
+          console.log(values);
+          let stringifiedParams = values.join(", ");
+
+          return `provider.${methodName}(${stringifiedParams})`;
+        }
+      );
+
+      return updatedCode;
+    };
+
     const updateMethod = (methodName: string, latestParamsArray: any) => {
       const params = constructParams(latestParamsArray);
       const jsonObject = {
@@ -215,6 +248,8 @@ const Builder = () => {
     };
 
     updateMethod(method.name, paramsArray);
+
+    console.log(paramsArray);
   }, [method, paramsArray, rpcUrl]);
 
   return (
@@ -285,16 +320,75 @@ const Builder = () => {
             {paramsArray.map((param, index) => (
               <div key={index}>
                 <p className="mt-3">{formatName(param.name)}</p>
-                <p className="mt-3">{param.value?.description}</p>
-                {param.value?.value?.length > 0 ? (
+                {!Array.isArray(param.value) && (
+                  <p className="mt-3">{param.value?.description}</p>
+                )}
+                {Array.isArray(param.value) ? (
+                  <div>
+                    {param.value.map((val, ind) => {
+                      return (
+                        <div key={ind}>
+                          <p className="mt-3">{formatName(val.name)}</p>
+                          <p className="mt-3">{val.value?.description}</p>
+                          <input
+                            onChange={(e) => {
+                              // TODO: Fix bug here
+                              setParamsArray((prevParamsArray) => {
+                                const updatedParamsArray = [...prevParamsArray];
+                                let value: string | number = (
+                                  (
+                                    updatedParamsArray[index].value as {
+                                      [key: number]: {
+                                        description: any;
+                                        placeholder: any;
+                                        index: any;
+                                        value: any;
+                                      };
+                                    }
+                                  )[ind] as {
+                                    placeholder: any;
+                                  }
+                                ).placeholder;
+                                if (typeof value == "number") {
+                                  value = parseInt(e.target.value);
+                                } else {
+                                  value = e.target.value;
+                                }
+                                console.log(value);
+                                (
+                                  (
+                                    updatedParamsArray[index].value as {
+                                      [key: number]: {
+                                        description: any;
+                                        placeholder: any;
+                                        index: any;
+                                        value: any;
+                                      };
+                                    }
+                                  )[ind] as {
+                                    placeholder: any;
+                                  }
+                                ).placeholder = value;
+                                return updatedParamsArray;
+                              });
+                            }}
+                            className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                            defaultValue={val.value?.placeholder}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : param.value?.value?.length > 0 ? (
                   <div>
                     <select
                       defaultValue={param.value?.value[0].name}
                       onChange={(e) => {
                         setParamsArray((prevParamsArray) => {
                           const updatedParamsArray = [...prevParamsArray];
-                          updatedParamsArray[index].value.index =
-                            e.target.selectedIndex;
+                          (
+                            updatedParamsArray[index].value as { index: any }
+                          ).index = e.target.selectedIndex;
                           return updatedParamsArray;
                         });
                       }}
@@ -313,19 +407,20 @@ const Builder = () => {
                       onChange={(e) => {
                         setParamsArray((prevParamsArray) => {
                           const updatedParamsArray = [...prevParamsArray];
-                          const selectedIndex =
-                            updatedParamsArray[index].value.index;
-                          let value: string | number =
-                            updatedParamsArray[index].value.value[selectedIndex]
-                              .placeholder;
+                          const selectedIndex = (
+                            updatedParamsArray[index].value as { index: any }
+                          ).index;
+                          let value: string | number = (
+                            updatedParamsArray[index].value as { value: any }
+                          ).value[selectedIndex].placeholder;
                           if (typeof value == "number") {
                             value = parseInt(e.target.value);
                           } else {
                             value = e.target.value;
                           }
-                          updatedParamsArray[index].value.value[
-                            selectedIndex
-                          ].placeholder = value;
+                          (
+                            updatedParamsArray[index].value as { value: any }
+                          ).value[selectedIndex].placeholder = value;
                           return updatedParamsArray;
                         });
                       }}
@@ -340,14 +435,21 @@ const Builder = () => {
                     onChange={(e) => {
                       setParamsArray((prevParamsArray) => {
                         const updatedParamsArray = [...prevParamsArray];
-                        let value: string | number =
-                          updatedParamsArray[index].value.placeholder;
+                        let value: string | number = (
+                          updatedParamsArray[index].value as {
+                            placeholder: any;
+                          }
+                        ).placeholder;
                         if (typeof value == "number") {
                           value = parseInt(e.target.value);
                         } else {
                           value = e.target.value;
                         }
-                        updatedParamsArray[index].value.placeholder = value;
+                        (
+                          updatedParamsArray[index].value as {
+                            placeholder: any;
+                          }
+                        ).placeholder = value;
                         return updatedParamsArray;
                       });
                     }}
