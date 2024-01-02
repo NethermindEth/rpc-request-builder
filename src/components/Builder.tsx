@@ -57,7 +57,7 @@ const Builder = () => {
             },
           });
         }
-        console.log(params);
+
         return params;
       }
       return {};
@@ -134,7 +134,7 @@ const Builder = () => {
         let p = {};
         param.value.forEach((val: any) => {
           let placeholder = val.value?.placeholder;
-          if (val.value?.name == "entry_point_selector") {
+          if (val.name == "entry_point_selector") {
             placeholder = selector.getSelectorFromName(placeholder);
           }
 
@@ -164,7 +164,7 @@ const Builder = () => {
         params.push(param.value?.placeholder);
       }
     });
-    console.log(params);
+
     return params;
   };
 
@@ -193,25 +193,21 @@ const Builder = () => {
       const regexPattern = /provider\.(\w+)\(([^)]*)\)/;
       const codeSnippet = method.starknetJs;
 
+      // TODO: Modify this so it can support starknet.js for methods with nested params
       const updatedCode = codeSnippet.replace(
         regexPattern,
         (match, methodName, params) => {
-          console.log(currentParamsArray);
           const values = currentParamsArray.map((item) => {
             // Check if the item is an object
             if (item && typeof item === "object" && !Array.isArray(item)) {
               const objectItem = Object.values(item)[0];
-              console.log(objectItem, item, Object.keys(item));
               if (typeof objectItem === "string") {
                 return `"${Object.values(item)}"`;
               } else if (typeof objectItem === "number") {
                 return Object.values(item);
               }
-              console.log(item);
               return item;
             } else {
-              console.log(item);
-              console.log(typeof item);
               if (item && typeof item === "string") {
                 return `"${item}"`;
               }
@@ -219,7 +215,6 @@ const Builder = () => {
             }
           });
 
-          console.log(values);
           let stringifiedParams = values.join(", ");
 
           return `provider.${methodName}(${stringifiedParams})`;
@@ -248,8 +243,6 @@ const Builder = () => {
     };
 
     updateMethod(method.name, paramsArray);
-
-    console.log(paramsArray);
   }, [method, paramsArray, rpcUrl]);
 
   return (
@@ -267,7 +260,7 @@ const Builder = () => {
                     updateRpcUrl(e.target.value, oldRpcUrl);
                   }}
                   className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full"
-                  defaultValue={rpcUrl}
+                  value={rpcUrl}
                 />
                 <p
                   onClick={() => setUseCustomRpcUrl(!useCustomRpcUrl)}
@@ -317,148 +310,199 @@ const Builder = () => {
                 </option>
               ))}
             </select>
-            {paramsArray.map((param, index) => (
-              <div key={index}>
-                <p className="mt-3">{formatName(param.name)}</p>
-                {!Array.isArray(param.value) && (
-                  <p className="mt-3">{param.value?.description}</p>
-                )}
-                {Array.isArray(param.value) ? (
-                  <div>
-                    {param.value.map((val, ind) => {
-                      return (
-                        <div key={ind}>
-                          <p className="mt-3">{formatName(val.name)}</p>
-                          <p className="mt-3">{val.value?.description}</p>
-                          <input
-                            onChange={(e) => {
-                              // TODO: Fix bug here
-                              setParamsArray((prevParamsArray) => {
-                                const updatedParamsArray = [...prevParamsArray];
-                                let value: string | number = (
-                                  (
-                                    updatedParamsArray[index].value as {
-                                      [key: number]: {
-                                        description: any;
-                                        placeholder: any;
-                                        index: any;
-                                        value: any;
-                                      };
-                                    }
-                                  )[ind] as {
-                                    placeholder: any;
+            {
+              // Loops through all parameters and renders them
+              paramsArray.map((param, index) => (
+                <div key={index}>
+                  <p className="mt-3">{formatName(param.name)}</p>
+                  {
+                    // some parameters have sub-parameters. Render the description if it doesn't
+                    !Array.isArray(param.value) && (
+                      <p className="mt-3">{param.value?.description}</p>
+                    )
+                  }
+                  {Array.isArray(param.value) ? (
+                    // sub-parameters are rendered here
+                    <div>
+                      {param.value.map((val, ind) => {
+                        return (
+                          <div key={ind}>
+                            <p className="mt-3">{formatName(val.name)}</p>
+                            <p className="mt-3">{val.value?.description}</p>
+                            <input
+                              onChange={(e) => {
+                                setParamsArray((prevParamsArray) => {
+                                  const updatedParamsArray = JSON.parse(
+                                    JSON.stringify(prevParamsArray)
+                                  );
+
+                                  // Reference to the specific placeholder
+                                  let placeholder =
+                                    updatedParamsArray[index].value[ind].value
+                                      .placeholder;
+
+                                  // Check the type and update the placeholder accordingly
+                                  if (typeof placeholder === "number") {
+                                    placeholder = parseInt(e.target.value);
+                                  } else if (Array.isArray(placeholder)) {
+                                    placeholder = e.target.value.split(",");
+                                  } else {
+                                    placeholder = e.target.value;
                                   }
-                                ).placeholder;
-                                if (typeof value == "number") {
-                                  value = parseInt(e.target.value);
-                                } else {
-                                  value = e.target.value;
-                                }
-                                console.log(value);
-                                (
-                                  (
-                                    updatedParamsArray[index].value as {
-                                      [key: number]: {
-                                        description: any;
-                                        placeholder: any;
-                                        index: any;
-                                        value: any;
-                                      };
-                                    }
-                                  )[ind] as {
-                                    placeholder: any;
-                                  }
-                                ).placeholder = value;
-                                return updatedParamsArray;
-                              });
-                            }}
-                            className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
-                            defaultValue={val.value?.placeholder}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : param.value?.value?.length > 0 ? (
-                  <div>
-                    <select
-                      defaultValue={param.value?.value[0].name}
-                      onChange={(e) => {
-                        setParamsArray((prevParamsArray) => {
-                          const updatedParamsArray = [...prevParamsArray];
-                          (
-                            updatedParamsArray[index].value as { index: any }
-                          ).index = e.target.selectedIndex;
-                          return updatedParamsArray;
-                        });
-                      }}
-                      className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
-                    >
-                      {
-                        // @ts-ignore
-                        param.value?.value?.map((option, index) => (
-                          <option key={index} value={option.value}>
-                            {option.name}
-                          </option>
-                        ))
-                      }
-                    </select>
-                    <input
-                      onChange={(e) => {
-                        setParamsArray((prevParamsArray) => {
-                          const updatedParamsArray = [...prevParamsArray];
-                          const selectedIndex = (
-                            updatedParamsArray[index].value as { index: any }
-                          ).index;
-                          let value: string | number = (
-                            updatedParamsArray[index].value as { value: any }
-                          ).value[selectedIndex].placeholder;
-                          if (typeof value == "number") {
-                            value = parseInt(e.target.value);
-                          } else {
-                            value = e.target.value;
-                          }
-                          (
-                            updatedParamsArray[index].value as { value: any }
-                          ).value[selectedIndex].placeholder = value;
-                          return updatedParamsArray;
-                        });
-                      }}
-                      className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
-                      value={
-                        param.value?.value[param?.value?.index]?.placeholder
-                      }
-                    />
-                  </div>
-                ) : (
-                  <input
-                    onChange={(e) => {
-                      setParamsArray((prevParamsArray) => {
-                        const updatedParamsArray = [...prevParamsArray];
-                        let value: string | number = (
-                          updatedParamsArray[index].value as {
-                            placeholder: any;
-                          }
-                        ).placeholder;
-                        if (typeof value == "number") {
-                          value = parseInt(e.target.value);
-                        } else {
-                          value = e.target.value;
+
+                                  // Update the placeholder in the deep structure
+                                  updatedParamsArray[index].value[
+                                    ind
+                                  ].value.placeholder = placeholder;
+
+                                  return updatedParamsArray;
+                                });
+                              }}
+                              className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                              value={
+                                Array.isArray(val.value?.placeholder)
+                                  ? val.value?.placeholder.join(",")
+                                  : val.value?.placeholder
+                              }
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : param.value?.value?.length > 0 ? (
+                    <div>
+                      <select
+                        defaultValue={param.value?.value[0].name}
+                        onChange={(e) => {
+                          setParamsArray((prevParamsArray) => {
+                            const updatedParamsArray = [...prevParamsArray];
+                            (
+                              updatedParamsArray[index].value as { index: any }
+                            ).index = e.target.selectedIndex;
+                            return updatedParamsArray;
+                          });
+                        }}
+                        className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                      >
+                        {
+                          // @ts-ignore
+                          param.value?.value?.map((option, index) => (
+                            <option key={index} value={option.value}>
+                              {option.name}
+                            </option>
+                          ))
                         }
-                        (
-                          updatedParamsArray[index].value as {
-                            placeholder: any;
+                      </select>
+                      <input
+                        onChange={(e) => {
+                          setParamsArray((prevParamsArray) => {
+                            const updatedParamsArray = JSON.parse(
+                              JSON.stringify(prevParamsArray)
+                            );
+                            const selectedIndex =
+                              updatedParamsArray[index].value.index;
+                            let value: string | number =
+                              updatedParamsArray[index].value?.value[
+                                selectedIndex
+                              ].placeholder;
+                            if (typeof value == "number") {
+                              value = parseInt(e.target.value);
+                            } else {
+                              value = e.target.value;
+                            }
+                            updatedParamsArray[index].value.value[
+                              selectedIndex
+                            ].placeholder = value;
+
+                            return updatedParamsArray;
+                          });
+                        }}
+                        className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                        value={
+                          Array.isArray(
+                            param.value?.value[param?.value?.index]?.placeholder
+                          )
+                            ? param.value?.value[
+                                param?.value?.index
+                              ]?.placeholder?.join(",")
+                            : param.value?.value[param?.value?.index]
+                                ?.placeholder
+                        }
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      {Array.isArray(param.value?.placeholder) ? (
+                        <>
+                          {param.value?.placeholder?.map(
+                            (placeholder, index) => (
+                              <input
+                                key={index}
+                                onChange={(e) => {
+                                  setParamsArray((prevParamsArray) => {
+                                    const updatedParamsArray = JSON.parse(
+                                      JSON.stringify(prevParamsArray)
+                                    );
+                                    let value: string | number =
+                                      updatedParamsArray[index].value
+                                        .placeholder;
+                                    if (typeof value == "number") {
+                                      value = parseInt(e.target.value);
+                                    } else {
+                                      value = e.target.value;
+                                    }
+
+                                    updatedParamsArray[
+                                      index
+                                    ].value.placeholder = value;
+
+                                    return updatedParamsArray;
+                                  });
+                                }}
+                                className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                                value={
+                                  Array.isArray(placeholder)
+                                    ? placeholder.join(",")
+                                    : placeholder
+                                }
+                              />
+                            )
+                          )}
+                        </>
+                      ) : (
+                        <input // TODO: Remove duplicate code
+                          onChange={(e) => {
+                            setParamsArray((prevParamsArray) => {
+                              const updatedParamsArray = JSON.parse(
+                                JSON.stringify(prevParamsArray)
+                              );
+                              let value: string | number =
+                                updatedParamsArray[index].value.placeholder;
+                              if (typeof value == "number") {
+                                value = parseInt(e.target.value);
+                              } else {
+                                value = e.target.value;
+                              }
+
+                              updatedParamsArray[index].value.placeholder =
+                                value;
+
+                              return updatedParamsArray;
+                            });
+                          }}
+                          className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                          value={
+                            Array.isArray(param.value?.placeholder)
+                              ? param.value?.placeholder.join(",")
+                              : param.value?.placeholder
                           }
-                        ).placeholder = value;
-                        return updatedParamsArray;
-                      });
-                    }}
-                    className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
-                    defaultValue={param.value?.placeholder}
-                  />
-                )}
-              </div>
-            ))}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))
+            }
 
             <button
               onClick={() => {
@@ -623,5 +667,21 @@ const Builder = () => {
     </>
   );
 };
+
+const InputField = ({
+  onChange,
+  defaultValue,
+  className,
+}: {
+  onChange: any;
+  defaultValue: any;
+  className: any;
+}) => (
+  <input
+    onChange={onChange}
+    className={className}
+    defaultValue={defaultValue}
+  />
+);
 
 export default Builder;

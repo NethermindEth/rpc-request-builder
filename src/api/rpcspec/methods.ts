@@ -30,6 +30,11 @@ const contract_address = {
   description: "The address of the contract",
 };
 
+const l1_address = {
+  placeholder: "0xc662c410c0ecf747543f5ba90660f6abebd9c8c4",
+  description: "The address of the l1 contract sending the message",
+};
+
 const transaction_hash = {
   placeholder:
     "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11",
@@ -61,13 +66,20 @@ const max_fee = {
   description: "The maximum fee the sender is willing to pay",
 };
 
+const signature = {
+  placeholder: [
+    "0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98",
+    "0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af",
+  ],
+};
+
 export const INVOKE_TXN_V0 = {
   type: {
     placeholder: "INVOKE",
   },
   max_fee,
   version,
-  signature: {},
+  signature,
   contract_address,
   entry_point_selector,
   calldata,
@@ -81,7 +93,7 @@ export const INVOKE_TXN_V1 = {
   calldata,
   max_fee,
   version,
-  signature: {},
+  signature,
   nonce: {
     placeholder: "0x0",
   },
@@ -268,21 +280,22 @@ const ReadMethods = [
       request: functionCall,
       blockId,
     },
-    starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-    const { RpcProvider } = require('starknet');
-    
-    const provider = new RpcProvider({
-        nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-    })
-    
-    provider.callContract({
-      contractAddress: "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
-      entrypoint: 'name',
-      calldata: [],
-    }).then(response => {
-        console.log(response);
-    });
-    `,
+    starknetJs: ``,
+    // starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
+    // const { RpcProvider } = require('starknet');
+
+    // const provider = new RpcProvider({
+    //     nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
+    // })
+
+    // provider.callContract({
+    //   contractAddress: "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
+    //   entrypoint: 'name',
+    //   calldata: [],
+    // }).then(response => {
+    //     console.log(response);
+    // });
+    // `,
   },
 
   // Estimate the fee for StarkNet transactions
@@ -307,11 +320,11 @@ const ReadMethods = [
     name: "starknet_estimateMessageFee",
     params: {
       message: {
-        from_address: contract_address,
+        from_address: l1_address,
         to_address: contract_address,
         entry_point_selector,
         payload: {
-          placeholder: "",
+          placeholder: [],
           description: "The payload of the message",
         },
       },
