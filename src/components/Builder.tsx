@@ -247,8 +247,8 @@ const Builder = () => {
 
   return (
     <>
-      <div className="lg:flex m-5 bg-gray-bg text-sm">
-        <div className="w-1/3 p-3">
+      <div className="lg:flex m-5 sm:m-1 bg-gray-bg text-sm">
+        <div className="sm:w-full lg:w-1/3 p-3">
           <h2 className="my-2 text-lg">Configure Request</h2>
           <div className="my-5">
             {useCustomRpcUrl ? (
@@ -514,7 +514,7 @@ const Builder = () => {
             </button>
           </div>
         </div>
-        <div className="w-2/3">
+        <div className="lg:w-2/3">
           <div>
             <h2 className="p-3 text-lg">Request Preview</h2>
             <div className="m-5 bg-[#232326] rounded">
