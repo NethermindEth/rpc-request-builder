@@ -71,11 +71,13 @@ const signature = {
     "0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98",
     "0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af",
   ],
+  description: "A transaction signature",
 };
 
 export const INVOKE_TXN_V0 = {
   type: {
     placeholder: "INVOKE",
+    description: "The type of the transaction",
   },
   max_fee,
   version,
@@ -88,6 +90,7 @@ export const INVOKE_TXN_V0 = {
 export const INVOKE_TXN_V1 = {
   type: {
     placeholder: "INVOKE",
+    description: "The type of the transaction",
   },
   sender_address: contract_address,
   calldata,
@@ -96,6 +99,7 @@ export const INVOKE_TXN_V1 = {
   signature,
   nonce: {
     placeholder: "0x0",
+    description: "A field element. represented by at most 63 hex digits",
   },
 };
 
@@ -116,7 +120,7 @@ const ReadMethods = [
   {
     name: "starknet_getBlockWithTxHashes",
     params: {
-      blockId: blockId,
+      blockId,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockWithTxHashes("latest").then(block => {
   console.log(block);
@@ -128,7 +132,7 @@ const ReadMethods = [
   {
     name: "starknet_getBlockWithTxs",
     params: {
-      blockId: blockId,
+      blockId,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockWithTxs("latest").then(block => {
   console.log(block);
@@ -140,7 +144,7 @@ const ReadMethods = [
   {
     name: "starknet_getStateUpdate",
     params: {
-      blockId: blockId,
+      blockId,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockStateUpdate("latest").then(stateUpdate => {
     console.log(stateUpdate);
@@ -265,7 +269,7 @@ const ReadMethods = [
   {
     name: "starknet_getBlockTransactionCount",
     params: {
-      blockId: blockId,
+      blockId,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockTransactionCount("latest").then(transactionCount => {
     console.log(transactionCount);
@@ -382,8 +386,11 @@ const ReadMethods = [
         to_block: blockId,
         address: contract_address,
         keys: {
-          placeholder:
-            "0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e",
+          placeholder: [
+            [
+              "0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e",
+            ],
+          ],
           description: "The key to the storage value for the given contract",
           type: "array",
         },
@@ -394,6 +401,7 @@ const ReadMethods = [
         },
         chunk_size: {
           placeholder: 2,
+          description: "The number of events to return",
         },
       },
     },

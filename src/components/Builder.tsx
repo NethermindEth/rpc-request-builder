@@ -17,19 +17,19 @@ import { selector } from "starknet";
 
 const formatName = (name: string) => {
   // Make first letter uppercase
-  name = name.charAt(0).toUpperCase() + name.slice(1);
-  // turn _ into space
-  return name.replace(/_/g, " ");
+  // name = name.charAt(0).toUpperCase() + name.slice(1);
+  // // turn _ into space
+  // return name.replace(/_/g, " ");
+  return "";
 };
 
 const Builder = () => {
   const transformParamsToArray = (params: any) => {
-    const transformParam = (param: any) => {
-      if (param.description) {
+    const transformParam = (param: any): any => {
+      if (param.description || param.placeholder) {
         if (param.oneOf) {
           return {
             description: param.description,
-            placeholder: param.placeholder,
             index: param.index,
             value: param.oneOf.map((option: any) => ({
               name: option.name,
@@ -42,20 +42,15 @@ const Builder = () => {
           return {
             description: param.description,
             placeholder: param.placeholder,
-            value: [],
           };
         }
       } else if (!param.placeholder && !param.description) {
-        let params = [];
+        let params = {};
         for (const [key, value] of Object.entries(param)) {
-          params.push({
-            name: key,
-            value: {
-              description: (value as any).description,
-              placeholder: (value as any).placeholder,
-              value: [],
-            },
-          });
+          params = {
+            ...params,
+            [key]: transformParam(value),
+          };
         }
 
         return params;
@@ -66,10 +61,11 @@ const Builder = () => {
     return params
       ? Object.entries(params).flatMap(([name, value]) => {
           if (Array.isArray(value)) {
-            return value.map((param: any) => ({
-              name,
-              value: transformParam(param),
-            }));
+            let values = value.map((param: any) => {
+              return transformParam(param);
+            });
+
+            return { name, value: values };
           }
           return { name, value: transformParam(value) };
         })
@@ -127,45 +123,54 @@ const Builder = () => {
     return newCurlRequest;
   };
 
-  const constructParams = (latestParamsArray: any) => {
-    let params: any = [];
-    latestParamsArray.forEach((param: any) => {
-      if (Array.isArray(param.value)) {
-        let p = {};
-        param.value.forEach((val: any) => {
-          let placeholder = val.value?.placeholder;
-          if (val.name == "entry_point_selector") {
-            placeholder = selector.getSelectorFromName(placeholder);
-          }
+  interface ParamsObject {
+    [key: string]: any;
+  }
 
-          p = {
-            ...p,
-            [val.name]: placeholder,
-          };
-        });
-        params.push(p);
-      } else if (param.value?.value?.length > 0) {
-        const selectedOption = param.value?.value[param?.value?.index];
-        const isEnum = selectedOption.enum ? true : false;
-        if (isEnum) {
-          params.push(selectedOption.placeholder);
-        } else {
-          let placeholder = selectedOption.placeholder;
-          if (selectedOption.name == "entry_point_selector") {
-            placeholder = selector.getSelectorFromName(placeholder);
-          }
-
-          const p = {
-            [selectedOption.name]: placeholder,
-          };
-          params.push(p);
-        }
-      } else {
-        params.push(param.value?.placeholder);
+  const constructParamsArray = (latestParamsArray: any) => {
+    const processPlaceholder = (latestParams: any, isEntryPoint: boolean) => {
+      let placeholder = latestParams.placeholder;
+      if (isEntryPoint) {
+        placeholder = selector.getSelectorFromName(placeholder);
       }
-    });
+      return placeholder;
+    };
 
-    return params;
+    const constructParams = (latestParams: any, isEntryPoint: boolean): any => {
+      if (!latestParams.description) {
+        return Object.entries(latestParams).reduce(
+          (acc: ParamsObject, [key, value]) => {
+            acc[key] = Array.isArray(value)
+              ? value.map((val) =>
+                  constructParams(val, key === "entry_point_selector")
+                )
+              : constructParams(value, key === "entry_point_selector");
+            return acc;
+          },
+          {}
+        );
+      } else if (latestParams?.value?.length > 0) {
+        const selectedOption = latestParams.value[latestParams.index];
+        const placeholder = processPlaceholder(selectedOption, isEntryPoint);
+        return selectedOption.enum
+          ? placeholder
+          : { [selectedOption.name]: placeholder };
+      } else {
+        return processPlaceholder(latestParams, isEntryPoint);
+      }
+    };
+
+    return latestParamsArray.map((param: any) => {
+      if (Array.isArray(param.value)) {
+        return param.value.map((val: any) =>
+          constructParams(val, val.name === "entry_point_selector")
+        );
+      }
+      return constructParams(
+        param.value,
+        param.name === "entry_point_selector"
+      );
+    });
   };
 
   const sendRequest = async () => {
@@ -225,7 +230,7 @@ const Builder = () => {
     };
 
     const updateMethod = (methodName: string, latestParamsArray: any) => {
-      const params = constructParams(latestParamsArray);
+      const params = constructParamsArray(latestParamsArray);
       const jsonObject = {
         jsonrpc: "2.0",
         method: methodName,
@@ -325,46 +330,119 @@ const Builder = () => {
                     // sub-parameters are rendered here
                     <div>
                       {param.value.map((val, ind) => {
+                        // console.log(val);
                         return (
                           <div key={ind}>
                             <p className="mt-3">{formatName(val.name)}</p>
                             <p className="mt-3">{val.value?.description}</p>
-                            <input
-                              onChange={(e) => {
-                                setParamsArray((prevParamsArray) => {
-                                  const updatedParamsArray = JSON.parse(
-                                    JSON.stringify(prevParamsArray)
-                                  );
+                            {val.value?.value?.length > 0 ? (
+                              <div>
+                                <select
+                                  value={val.value[val.index]?.name}
+                                  onChange={(e) => {
+                                    setParamsArray((prevParamsArray) => {
+                                      const updatedParamsArray = JSON.parse(
+                                        JSON.stringify(prevParamsArray)
+                                      );
+                                      updatedParamsArray[index].value[
+                                        ind
+                                      ].value.index = parseInt(e.target.value);
+                                      console.log(
+                                        updatedParamsArray[index].value[ind]
+                                      );
 
-                                  // Reference to the specific placeholder
-                                  let placeholder =
-                                    updatedParamsArray[index].value[ind].value
-                                      .placeholder;
-
-                                  // Check the type and update the placeholder accordingly
-                                  if (typeof placeholder === "number") {
-                                    placeholder = parseInt(e.target.value);
-                                  } else if (Array.isArray(placeholder)) {
-                                    placeholder = e.target.value.split(",");
-                                  } else {
-                                    placeholder = e.target.value;
+                                      return updatedParamsArray;
+                                    });
+                                  }}
+                                  className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                                >
+                                  {
+                                    // @ts-ignore
+                                    val.value?.value.map((option, i) => (
+                                      <option key={i} value={i}>
+                                        {option.name}
+                                      </option>
+                                    ))
                                   }
+                                </select>
+                                <input
+                                  onChange={(e) => {
+                                    console.log("die");
+                                    setParamsArray((prevParamsArray) => {
+                                      const updatedParamsArray = JSON.parse(
+                                        JSON.stringify(prevParamsArray)
+                                      );
+                                      const selectedIndex =
+                                        updatedParamsArray[index].value?.value
+                                          ?.value?.index;
+                                      let value: string | number =
+                                        updatedParamsArray[index].value?.value[
+                                          selectedIndex
+                                        ].placeholder;
+                                      if (typeof value == "number") {
+                                        value = parseInt(e.target.value);
+                                      } else {
+                                        value = e.target.value;
+                                      }
+                                      updatedParamsArray[index].value.value[
+                                        selectedIndex
+                                      ].placeholder = value;
 
-                                  // Update the placeholder in the deep structure
-                                  updatedParamsArray[index].value[
-                                    ind
-                                  ].value.placeholder = placeholder;
+                                      return updatedParamsArray;
+                                    });
+                                  }}
+                                  className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                                  value={
+                                    Array.isArray(
+                                      val.value?.value[val.value?.index]
+                                        ?.placeholder
+                                    )
+                                      ? val.value?.value[
+                                          val.value?.index
+                                        ]?.placeholder?.join(",")
+                                      : val.value?.value[val.value?.index]
+                                          ?.placeholder
+                                  }
+                                />
+                              </div>
+                            ) : (
+                              <input
+                                onChange={(e) => {
+                                  setParamsArray((prevParamsArray) => {
+                                    const updatedParamsArray = JSON.parse(
+                                      JSON.stringify(prevParamsArray)
+                                    );
 
-                                  return updatedParamsArray;
-                                });
-                              }}
-                              className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
-                              value={
-                                Array.isArray(val.value?.placeholder)
-                                  ? val.value?.placeholder.join(",")
-                                  : val.value?.placeholder
-                              }
-                            />
+                                    // Reference to the specific placeholder
+                                    let placeholder =
+                                      updatedParamsArray[index].value[ind].value
+                                        .placeholder;
+
+                                    // Check the type and update the placeholder accordingly
+                                    if (typeof placeholder === "number") {
+                                      placeholder = parseInt(e.target.value);
+                                    } else if (Array.isArray(placeholder)) {
+                                      placeholder = e.target.value.split(",");
+                                    } else {
+                                      placeholder = e.target.value;
+                                    }
+
+                                    // Update the placeholder in the deep structure
+                                    updatedParamsArray[index].value[
+                                      ind
+                                    ].value.placeholder = placeholder;
+
+                                    return updatedParamsArray;
+                                  });
+                                }}
+                                className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                                value={
+                                  Array.isArray(val.value?.placeholder)
+                                    ? val.value?.placeholder.join(",")
+                                    : val.value?.placeholder
+                                }
+                              />
+                            )}
                           </div>
                         );
                       })}
@@ -435,7 +513,13 @@ const Builder = () => {
                       {Array.isArray(param.value?.placeholder) ? (
                         <>
                           {param.value?.placeholder?.map(
-                            (placeholder, index) => (
+                            (
+                              placeholder:
+                                | string
+                                | number
+                                | Array<string | number>,
+                              index: number
+                            ) => (
                               <input
                                 key={index}
                                 onChange={(e) => {
