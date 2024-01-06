@@ -45,9 +45,16 @@ const entry_point_selector = {
   placeholder: "name",
   description: "The name of the function to call",
 };
+
 const calldata = {
   placeholder: [],
   description: "The calldata to send with the function call",
+};
+
+const class_hash = {
+  placeholder:
+    "0x3131fa018d520a037686ce3efddeab8f28895662f019ca3ca18a626650f7d1e",
+  description: "The hash of the contract class",
 };
 
 const functionCall = {
@@ -56,7 +63,12 @@ const functionCall = {
   calldata,
 };
 
-const version = {
+const version0 = {
+  placeholder: "0x0",
+  description: "The version of the transaction",
+};
+
+const version1 = {
   placeholder: "0x1",
   description: "The version of the transaction",
 };
@@ -74,20 +86,25 @@ const signature = {
   description: "A transaction signature",
 };
 
-export const INVOKE_TXN_V0 = {
+const nonce = {
+  placeholder: "0x0",
+  description: "A field element. represented by at most 63 hex digits",
+};
+
+const INVOKE_TXN_V0 = {
   type: {
     placeholder: "INVOKE",
     description: "The type of the transaction",
   },
   max_fee,
-  version,
+  version: version0,
   signature,
   contract_address,
   entry_point_selector,
   calldata,
 };
 
-export const INVOKE_TXN_V1 = {
+const INVOKE_TXN_V1 = {
   type: {
     placeholder: "INVOKE",
     description: "The type of the transaction",
@@ -95,15 +112,54 @@ export const INVOKE_TXN_V1 = {
   sender_address: contract_address,
   calldata,
   max_fee,
-  version,
+  version: version1,
   signature,
-  nonce: {
-    placeholder: "0x0",
-    description: "A field element. represented by at most 63 hex digits",
-  },
+  nonce,
 };
 
-export const BROADCASTED_INVOKE_TXN = INVOKE_TXN_V1;
+const BROADCASTED_INVOKE_TXN = INVOKE_TXN_V1;
+
+const DEPLOY_ACCOUNT_TXN_V1 = {
+  type: {
+    placeholder: "DEPLOY_ACCOUNT",
+    description: "The type of the transaction",
+  },
+  max_fee,
+  version: version1,
+  signature: {
+    placeholder: [
+      "0xd96bc7affb5648b601ddb49e9fd23f6ebfe59375e2ce5dd06b7db638d21b71",
+      "0x6582c1512c8515254a52deb5fef1320d4f5dd0cb8352b260a4e7a90c61510ba",
+      "0x5dec330eebf36c8672b60db4a718d44762d3ae6d1333e553197acb47ee5a062",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+    ],
+    description: "A transaction signature",
+  },
+  nonce,
+  contract_address_salt: {
+    placeholder:
+      "0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c",
+    description: "The salt for the address of the deployed contract",
+  },
+  constructor_calldata: {
+    placeholder: [
+      "0x5aa23d5bb71ddaa783da7ea79d405315bafa7cf0387a74f4593578c3e9e6570",
+      "0x2dd76e7ad84dbed81c314ffe5e7a7cacfb8f4836f01af4e913f275f89a3de1a",
+      "0x1",
+      "0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c",
+    ],
+    description: "The parameters passed to the constructor",
+  },
+  class_hash,
+};
+
+const BROADCASTED_DEPLOY_ACCOUNT_TXN = DEPLOY_ACCOUNT_TXN_V1;
 
 const ReadMethods = [
   // Returns the version of the Starknet JSON-RPC specification being used
@@ -227,11 +283,7 @@ const ReadMethods = [
     name: "starknet_getClass",
     params: {
       block_id,
-      class_hash: {
-        placeholder:
-          "0x07fc0b6ecc96a698cdac8c4ae447816d73bffdd9603faacffc0a8047149d02ed",
-        description: "The hash of the contract class",
-      },
+      class_hash,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getClass("latest", "0x07fc0b6ecc96a698cdac8c4ae447816d73bffdd9603faacffc0a8047149d02ed").then(class => {
     console.log(class);
@@ -455,14 +507,14 @@ const WriteMethods = [
   //     starknetJs: ``,
   //   },
 
-  //   // Submit a new deploy account transaction
-  //   {
-  //     name: "starknet_addDeployAccountTransaction",
-  //     // params: {
-  //     //   deploy_account_transaction: BROADCASTED_DEPLOY_ACCOUNT_TXN,
-  //     // },
-  //     starknetJs: ` `,
-  //   },
+  // Submit a new deploy account transaction
+  {
+    name: "starknet_addDeployAccountTransaction",
+    params: {
+      deploy_account_transaction: BROADCASTED_DEPLOY_ACCOUNT_TXN,
+    },
+    starknetJs: ``,
+  },
 ];
 
 const TraceMethods = [
