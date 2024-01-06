@@ -162,17 +162,23 @@ const Builder = () => {
       }
     };
 
-    return latestParamsArray.map((param: any) => {
-      if (Array.isArray(param.value)) {
-        return param.value.map((val: any) =>
-          constructParams(val, val.name === "entry_point_selector")
-        );
-      }
-      return constructParams(
-        param.value,
-        param.name === "entry_point_selector"
-      );
-    });
+    return latestParamsArray.reduce(
+      (accumulator: any, param: { value: any[]; name: string }) => {
+        if (Array.isArray(param.value)) {
+          accumulator[param.name] = param.value.map((val: any) =>
+            constructParams(val, val.name === "entry_point_selector")
+          );
+        } else {
+          accumulator[param.name] = constructParams(
+            param.value,
+            param.name === "entry_point_selector"
+          );
+        }
+
+        return accumulator;
+      },
+      {}
+    );
   };
 
   const sendRequest = async () => {
@@ -196,34 +202,31 @@ const Builder = () => {
   }, [response]);
 
   useEffect(() => {
-    const updateStarknetJsParams = (currentParamsArray: Array<any>) => {
+    const updateStarknetJsParams = (currentParamsObj: {
+      [key: string]: any;
+    }) => {
       const regexPattern = /provider\.(\w+)\(([^)]*)\)/;
       const codeSnippet = method.starknetJs;
 
-      // TODO: Modify this so it can support starknet.js for methods with nested params
       const updatedCode = codeSnippet.replace(
         regexPattern,
         (match, methodName, params) => {
-          const values = currentParamsArray.map((item) => {
-            // Check if the item is an object
-            if (item && typeof item === "object" && !Array.isArray(item)) {
-              const objectItem = Object.values(item)[0];
-              if (typeof objectItem === "string") {
-                return `"${Object.values(item)}"`;
-              } else if (typeof objectItem === "number") {
-                return Object.values(item);
+          const values = Object.entries(currentParamsObj).flatMap(
+            ([key, value]) => {
+              if (typeof value === "object" && !Array.isArray(value)) {
+                // If value is an object, return its stringified values
+                return Object.values(value).map((val) =>
+                  typeof val === "string" ? `"${val}"` : val
+                );
+              } else if (typeof value === "string") {
+                // If value is a string, return it with quotes
+                return `"${value}"`;
               }
-              return item;
-            } else {
-              if (item && typeof item === "string") {
-                return `"${item}"`;
-              }
-              return item;
+              return value; // Return other types (like numbers) as is
             }
-          });
+          );
 
           let stringifiedParams = values.join(", ");
-
           return `provider.${methodName}(${stringifiedParams})`;
         }
       );

@@ -7,7 +7,7 @@ const provider = new RpcProvider({
 
 `;
 
-const blockId = {
+const block_id = {
   placeholder: "latest",
   index: 0,
   description:
@@ -120,7 +120,7 @@ const ReadMethods = [
   {
     name: "starknet_getBlockWithTxHashes",
     params: {
-      blockId,
+      block_id,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockWithTxHashes("latest").then(block => {
   console.log(block);
@@ -132,7 +132,7 @@ const ReadMethods = [
   {
     name: "starknet_getBlockWithTxs",
     params: {
-      blockId,
+      block_id,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockWithTxs("latest").then(block => {
   console.log(block);
@@ -144,7 +144,7 @@ const ReadMethods = [
   {
     name: "starknet_getStateUpdate",
     params: {
-      blockId,
+      block_id,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockStateUpdate("latest").then(stateUpdate => {
     console.log(stateUpdate);
@@ -162,7 +162,7 @@ const ReadMethods = [
           "0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e",
         description: "The key to the storage value for the given contract",
       },
-      blockId,
+      block_id,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getStorageAt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49", "0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e", "latest").then(storage => {
     console.log(storage);
@@ -198,7 +198,7 @@ const ReadMethods = [
   {
     name: "starknet_getTransactionByBlockIdAndIndex",
     params: {
-      blockId,
+      block_id,
       index: {
         placeholder: 0,
         description: "The index of the transaction in the block",
@@ -226,7 +226,7 @@ const ReadMethods = [
   {
     name: "starknet_getClass",
     params: {
-      blockId,
+      block_id,
       class_hash: {
         placeholder:
           "0x07fc0b6ecc96a698cdac8c4ae447816d73bffdd9603faacffc0a8047149d02ed",
@@ -243,7 +243,7 @@ const ReadMethods = [
   {
     name: "starknet_getClassHashAt",
     params: {
-      blockId,
+      block_id,
       contract_address,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getClassHashAt("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7").then(classHash => {
@@ -256,7 +256,7 @@ const ReadMethods = [
   {
     name: "starknet_getClassAt",
     params: {
-      blockId,
+      block_id,
       contract_address,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getClassAt("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7").then(class => {
@@ -269,7 +269,7 @@ const ReadMethods = [
   {
     name: "starknet_getBlockTransactionCount",
     params: {
-      blockId,
+      block_id,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockTransactionCount("latest").then(transactionCount => {
     console.log(transactionCount);
@@ -282,7 +282,7 @@ const ReadMethods = [
     name: "starknet_call",
     params: {
       request: functionCall,
-      blockId,
+      block_id,
     },
     starknetJs: ``,
     // starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
@@ -314,7 +314,7 @@ const ReadMethods = [
             "Flags that indicate how to simulate a given transaction. By default, the sequencer behavior is replicated locally",
         },
       ],
-      blockId,
+      block_id,
     },
     starknetJs: ``,
   },
@@ -332,7 +332,7 @@ const ReadMethods = [
           description: "The payload of the message",
         },
       },
-      blockId,
+      block_id,
     },
     starknetJs: ``,
   },
@@ -382,8 +382,8 @@ const ReadMethods = [
     name: "starknet_getEvents",
     params: {
       filter: {
-        from_block: blockId,
-        to_block: blockId,
+        from_block: block_id,
+        to_block: block_id,
         address: contract_address,
         keys: {
           placeholder: [
@@ -426,7 +426,7 @@ const ReadMethods = [
   {
     name: "starknet_getNonce",
     params: {
-      blockId,
+      block_id,
       contract_address,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getNonceForAddress("latest", "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7").then(nonce => {
@@ -478,7 +478,7 @@ const TraceMethods = [
   {
     name: "starknet_traceBlockTransactions",
     params: {
-      blockId: blockId,
+      block_id,
     },
     starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockTransactionsTraces("latest").then(transactionTraces => {
     console.log(transactionTraces);
@@ -487,18 +487,21 @@ const TraceMethods = [
   },
 
   // Simulate a given sequence of transactions on the requested state, and generate the execution traces. If one of the transactions is reverted, raises CONTRACT_ERROR
-  // {
-  //   name: "starknet_simulateTransactions",
-  //   params: {
-  //     blockId,
-  //     transactions: Array<BROADCASTED_TXN>,
-  //     simulation_flags: {
-
-  //     },
-  //   },
-  //   starknetJs: `
-  //   `,
-  // },
+  {
+    name: "starknet_simulateTransactions",
+    params: {
+      transactions: [BROADCASTED_INVOKE_TXN], //TODO:
+      simulation_flags: [
+        {
+          placeholder: "SKIP_VALIDATE",
+          description:
+            "describes what parts of the transaction should be executed",
+        },
+      ],
+      block_id,
+    },
+    starknetJs: ``,
+  },
 ];
 
 export const Methods = [...ReadMethods, ...TraceMethods];
@@ -506,5 +509,4 @@ export const comingSoon = [
   "starknet_addInvokeTransaction",
   "starknet_addDeclareTransaction",
   "starknet_addDeployAccountTransaction",
-  "starknet_simulateTransactions",
 ];
