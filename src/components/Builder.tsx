@@ -255,13 +255,52 @@ const Builder = () => {
     updateMethod(method.name, paramsArray);
   }, [method, paramsArray, rpcUrl]);
 
-  const handlePlaceholderChange = (placeholder: any, newValue: any) => {
+  const handlePlaceholderChange = (
+    placeholder: string | number | Array<string | number>,
+    newValue: any
+  ) => {
     if (typeof placeholder === "number") {
       return parseInt(newValue);
     } else if (Array.isArray(placeholder)) {
       return newValue.split(",");
     }
     return newValue;
+  };
+
+  const handleOrdinaryParamChange = (
+    value: string | number | Array<string | number>,
+    index: number
+  ) => {
+    setParamsArray((prevParamsArray) => {
+      const updatedParamsArray = JSON.parse(JSON.stringify(prevParamsArray));
+      let placeholder = updatedParamsArray[index]?.value?.placeholder;
+
+      placeholder = handlePlaceholderChange(placeholder, value);
+
+      updatedParamsArray[index].value.placeholder = placeholder;
+      return updatedParamsArray;
+    });
+  };
+
+  const handleObjectParamChange = (
+    value: string | number | Array<string | number>,
+    index: number,
+    key: string
+  ) => {
+    setParamsArray((prevParamsArray) => {
+      const updatedParamsArray = JSON.parse(JSON.stringify(prevParamsArray));
+
+      // Reference to the specific placeholder
+      let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
+
+      // Check the type and update the placeholder accordingly
+      placeholder = handlePlaceholderChange(placeholder, value);
+
+      // Update the placeholder in the deep structure
+      updatedParamsArray[index].value[key].placeholder = placeholder;
+
+      return updatedParamsArray;
+    });
   };
 
   const FormatInputField = ({
@@ -281,37 +320,23 @@ const Builder = () => {
               <div key={key}>
                 <p className="mt-3">{formatName(key)}</p>
                 <p className="mt-3 text-xs">{value.description}</p>
-                <input
-                  value={
-                    Array.isArray(value.placeholder)
-                      ? value.placeholder?.join(",")
-                      : value.placeholder
-                  }
-                  onChange={(e) => {
-                    setParamsArray((prevParamsArray) => {
-                      const updatedParamsArray = JSON.parse(
-                        JSON.stringify(prevParamsArray)
-                      );
-
-                      // Reference to the specific placeholder
-                      let placeholder =
-                        updatedParamsArray[index].value[key].placeholder;
-
-                      // Check the type and update the placeholder accordingly
-                      placeholder = handlePlaceholderChange(
-                        placeholder,
-                        e.target.value
-                      );
-
-                      // Update the placeholder in the deep structure
-                      updatedParamsArray[index].value[key].placeholder =
-                        placeholder;
-
-                      return updatedParamsArray;
-                    });
-                  }}
-                  className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
-                />
+                {Array.isArray(value.placeholder) ? (
+                  <textarea
+                    value={value.placeholder?.join(",")}
+                    onChange={(e) => {
+                      handleObjectParamChange(e.target.value, index, key);
+                    }}
+                    className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                  />
+                ) : (
+                  <input
+                    value={value.placeholder}
+                    onChange={(e) => {
+                      handleObjectParamChange(e.target.value, index, key);
+                    }}
+                    className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                  />
+                )}
               </div>
             ))
           ) : (
@@ -375,32 +400,23 @@ const Builder = () => {
                 </div>
               ) : (
                 <div>
-                  <input
-                    onChange={(e) => {
-                      setParamsArray((prevParamsArray) => {
-                        const updatedParamsArray = JSON.parse(
-                          JSON.stringify(prevParamsArray)
-                        );
-                        let placeholder =
-                          updatedParamsArray[index].value.placeholder;
-
-                        placeholder = handlePlaceholderChange(
-                          placeholder,
-                          e.target.value
-                        );
-
-                        updatedParamsArray[index].value.placeholder =
-                          placeholder;
-                        return updatedParamsArray;
-                      });
-                    }}
-                    className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
-                    value={
-                      Array.isArray(param.placeholder)
-                        ? param.placeholder?.join(",")
-                        : param.placeholder
-                    }
-                  />
+                  {Array.isArray(param.placeholder) ? (
+                    <textarea
+                      onChange={(e) => {
+                        handleOrdinaryParamChange(e.target.value, index);
+                      }}
+                      className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                      value={param.placeholder?.join(",")}
+                    />
+                  ) : (
+                    <input
+                      onChange={(e) => {
+                        handleOrdinaryParamChange(e.target.value, index);
+                      }}
+                      className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                      value={param.placeholder}
+                    />
+                  )}
                 </div>
               )}
             </>

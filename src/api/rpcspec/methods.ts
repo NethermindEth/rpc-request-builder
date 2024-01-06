@@ -57,7 +57,7 @@ const functionCall = {
 };
 
 const version = {
-  placeholder: "0x0",
+  placeholder: "0x1",
   description: "The version of the transaction",
 };
 
@@ -103,7 +103,7 @@ export const INVOKE_TXN_V1 = {
   },
 };
 
-export const BROADCASTED_INVOKE_TXN = INVOKE_TXN_V0 || INVOKE_TXN_V1;
+export const BROADCASTED_INVOKE_TXN = INVOKE_TXN_V1;
 
 const ReadMethods = [
   // Returns the version of the Starknet JSON-RPC specification being used
@@ -436,32 +436,34 @@ const ReadMethods = [
   },
 ];
 
-// const WriteMethods = [
-//   // Submit a new transaction to be added to the chain
-//   {
-//     name: "starknet_addInvokeTransaction",
-//     // params: BROADCASTED_INVOKE_TXN,
-//     starknetJs: ``,
-//   },
+const WriteMethods = [
+  // Submit a new transaction to be added to the chain
+  {
+    name: "starknet_addInvokeTransaction",
+    params: {
+      invoke_transaction: BROADCASTED_INVOKE_TXN,
+    },
+    starknetJs: ``,
+  },
 
-//   // Submit a new class declaration transaction
-//   {
-//     name: "starknet_addDeclareTransaction",
-//     // params: {
-//     //   declare_transaction: BROADCASTED_DECLARE_TXN,
-//     // },
-//     starknetJs: ``,
-//   },
+  //   // Submit a new class declaration transaction
+  //   {
+  //     name: "starknet_addDeclareTransaction",
+  //     // params: {
+  //     //   declare_transaction: BROADCASTED_DECLARE_TXN,
+  //     // },
+  //     starknetJs: ``,
+  //   },
 
-//   // Submit a new deploy account transaction
-//   {
-//     name: "starknet_addDeployAccountTransaction",
-//     // params: {
-//     //   deploy_account_transaction: BROADCASTED_DEPLOY_ACCOUNT_TXN,
-//     // },
-//     starknetJs: ` `,
-//   },
-// ];
+  //   // Submit a new deploy account transaction
+  //   {
+  //     name: "starknet_addDeployAccountTransaction",
+  //     // params: {
+  //     //   deploy_account_transaction: BROADCASTED_DEPLOY_ACCOUNT_TXN,
+  //     // },
+  //     starknetJs: ` `,
+  //   },
+];
 
 const TraceMethods = [
   // For a given executed transaction, return the trace of its execution, including internal calls
@@ -504,9 +506,8 @@ const TraceMethods = [
   },
 ];
 
-export const Methods = [...ReadMethods, ...TraceMethods];
+export const Methods = [...ReadMethods, ...TraceMethods, ...WriteMethods];
 export const comingSoon = [
-  "starknet_addInvokeTransaction",
   "starknet_addDeclareTransaction",
   "starknet_addDeployAccountTransaction",
 ];
