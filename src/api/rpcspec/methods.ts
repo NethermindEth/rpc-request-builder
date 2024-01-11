@@ -48,7 +48,7 @@ const entry_point_selector = {
 
 const calldata = {
   placeholder: [],
-  description: "The calldata to send with the function call",
+  description: "The calldata to send with the function call (e.g. 0x1,0x2)",
 };
 
 const class_hash = {
@@ -83,7 +83,7 @@ const signature = {
     "0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98",
     "0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af",
   ],
-  description: "A transaction signature",
+  description: "A transaction signature (e.g. 0x1,0x2)",
 };
 
 const nonce = {

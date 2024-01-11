@@ -272,7 +272,7 @@ const Builder = () => {
     index: number
   ) => {
     setParamsArray((prevParamsArray) => {
-      const updatedParamsArray = JSON.parse(JSON.stringify(prevParamsArray));
+      const updatedParamsArray = [...prevParamsArray];
       let placeholder = updatedParamsArray[index]?.value?.placeholder;
 
       placeholder = handlePlaceholderChange(placeholder, value);
@@ -288,7 +288,7 @@ const Builder = () => {
     key: string
   ) => {
     setParamsArray((prevParamsArray) => {
-      const updatedParamsArray = JSON.parse(JSON.stringify(prevParamsArray));
+      const updatedParamsArray = [...prevParamsArray];
 
       // Reference to the specific placeholder
       let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
@@ -306,9 +306,11 @@ const Builder = () => {
   const FormatInputField = ({
     param,
     index,
+    subKey,
   }: {
     param: any;
     index: number;
+    subKey?: string;
   }) => {
     return (
       <>
@@ -329,13 +331,23 @@ const Builder = () => {
                     className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                   />
                 ) : (
-                  <input
-                    value={value.placeholder}
-                    onChange={(e) => {
-                      handleObjectParamChange(e.target.value, index, key);
-                    }}
-                    className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
-                  />
+                  <div>
+                    {!value.placeholder ? (
+                      <FormatInputField
+                        param={value}
+                        index={index}
+                        subKey={key}
+                      />
+                    ) : (
+                      <input
+                        value={value.placeholder}
+                        onChange={(e) => {
+                          handleObjectParamChange(e.target.value, index, key);
+                        }}
+                        className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                      />
+                    )}
+                  </div>
                 )}
               </div>
             ))
@@ -344,15 +356,19 @@ const Builder = () => {
               {param.value?.length > 0 ? (
                 <div>
                   <select
-                    defaultValue={param.value[0].name}
+                    value={param.value[param.index].name}
                     onChange={(e) => {
                       setParamsArray((prevParamsArray) => {
                         const updatedParamsArray = [...prevParamsArray];
-                        (
-                          updatedParamsArray[index].value as {
-                            index: any;
-                          }
-                        ).index = e.target.selectedIndex;
+
+                        if (!subKey) {
+                          updatedParamsArray[index].value.index =
+                            e.target.selectedIndex;
+                        } else {
+                          updatedParamsArray[index].value[subKey].index =
+                            e.target.selectedIndex;
+                        }
+
                         return updatedParamsArray;
                       });
                     }}
@@ -370,22 +386,40 @@ const Builder = () => {
                   <input
                     onChange={(e) => {
                       setParamsArray((prevParamsArray) => {
-                        const updatedParamsArray = JSON.parse(
-                          JSON.stringify(prevParamsArray)
-                        );
-                        const selectedIndex =
+                        const updatedParamsArray = [...prevParamsArray];
+                        let selectedIndex =
                           updatedParamsArray[index].value.index;
-                        let value: string | number =
-                          updatedParamsArray[index].value?.value[selectedIndex]
-                            .placeholder;
-                        if (typeof value == "number") {
-                          value = parseInt(e.target.value);
+                        if (!subKey) {
+                          let value: string | number =
+                            updatedParamsArray[index].value?.value[
+                              selectedIndex
+                            ].placeholder;
+
+                          value =
+                            typeof value === "number"
+                              ? parseInt(e.target.value)
+                              : e.target.value;
+
+                          updatedParamsArray[index].value.value[
+                            selectedIndex
+                          ].placeholder = value;
                         } else {
-                          value = e.target.value;
+                          selectedIndex =
+                            updatedParamsArray[index]?.value[subKey]?.index;
+                          let value: string | number =
+                            updatedParamsArray[index]?.value[subKey]?.value[
+                              selectedIndex
+                            ].placeholder;
+
+                          value =
+                            typeof value === "number"
+                              ? parseInt(e.target.value)
+                              : e.target.value;
+
+                          updatedParamsArray[index].value[subKey].value[
+                            selectedIndex
+                          ].placeholder = value;
                         }
-                        updatedParamsArray[index].value.value[
-                          selectedIndex
-                        ].placeholder = value;
 
                         return updatedParamsArray;
                       });
