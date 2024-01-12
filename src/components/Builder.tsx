@@ -478,7 +478,10 @@ const Builder = () => {
                   value={rpcUrl}
                 />
                 <p
-                  onClick={() => setUseCustomRpcUrl(!useCustomRpcUrl)}
+                  onClick={() => {
+                    setUseCustomRpcUrl(!useCustomRpcUrl);
+                    setRpcUrl(MAINNET_RPC_URL);
+                  }}
                   className="text-xs my-3 text-cyan-400 cursor-pointer"
                 >
                   Use default RPC URL
