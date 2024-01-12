@@ -457,21 +457,7 @@ const ReadMethods = [
         },
       },
     },
-    starknetJs: `${STARKNET_JS_PREFIX}provider
-  .getEvents({
-    from_block: { block_number: 0 },
-    to_block: "latest",
-    address:
-      "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
-    keys: [
-      ["0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e"],
-    ],
-    chunk_size: 2,
-  })
-  .then((events: any) => {
-    console.log(events);
-  });
-    `,
+    starknetJs: ``,
   },
 
   // Get the nonce associated with the given address in the given block
