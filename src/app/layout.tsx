@@ -2,7 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"] });
+import { Exo } from "next/font/google";
+const inter = Exo({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Starknet JSON-RPC Request Builder",

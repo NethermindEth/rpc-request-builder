@@ -462,7 +462,7 @@ const Builder = () => {
 
   return (
     <>
-      <div className="lg:flex m-5 sm:m-1 bg-gray-bg text-sm">
+      <div className="lg:flex lg:m-5 md:m-3 bg-gray-bg text-sm">
         <div className="sm:w-full lg:w-1/3 p-3">
           <h2 className="my-2 text-lg">Configure Request</h2>
           <div className="my-5">
@@ -482,7 +482,7 @@ const Builder = () => {
                     setUseCustomRpcUrl(!useCustomRpcUrl);
                     setRpcUrl(MAINNET_RPC_URL);
                   }}
-                  className="text-xs my-3 text-cyan-400 cursor-pointer"
+                  className="text-sm my-3 text-[#ff4b00] cursor-pointer"
                 >
                   Use default RPC URL
                 </p>
@@ -503,7 +503,7 @@ const Builder = () => {
                 </select>
                 <p
                   onClick={() => setUseCustomRpcUrl(!useCustomRpcUrl)}
-                  className="text-xs my-3 text-cyan-400 cursor-pointer"
+                  className="text-sm my-3 text-[#ff4b00] cursor-pointer"
                 >
                   Use custom RPC URL
                 </p>
@@ -579,8 +579,8 @@ const Builder = () => {
         </div>
         <div className="lg:w-2/3">
           <div>
-            <h2 className="p-3 text-lg">Request Preview</h2>
-            <div className="m-5 bg-[#232326] rounded">
+            <h2 className="p-3 mt-3 text-lg">Request Preview</h2>
+            <div className="lg:m-5 md:m-3 bg-[#232326] rounded">
               <ul className="flex">
                 <li
                   onClick={() => setRequestTab("raw")}
@@ -664,9 +664,9 @@ const Builder = () => {
               </div>
             </div>
           </div>
-          <div>
+          <div className="mt-5">
             <h2 className="p-3 text-lg">Response Preview</h2>
-            <div className="m-5 bg-[#232326] rounded">
+            <div className="lg:m-5 md:m-3 bg-[#232326] rounded">
               <ul className="flex">
                 <li
                   onClick={() => setResponseTab("raw")}
