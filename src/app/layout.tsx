@@ -21,6 +21,13 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Starknet JSON-RPC Request Builder",
+    description:
+      "An interactive web tool designed for developers working with Starknet. This app simplifies the process of creating and testing JSON-RPC requests. Users can easily construct, modify, and send requests using Nethermind's free RPC Service.",
+    images: ["https://rpc-request-builder.voyager.online/og-image.png"],
+  },
 };
 
 export default function RootLayout({
