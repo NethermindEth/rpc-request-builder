@@ -285,21 +285,30 @@ const Builder = () => {
   const handleObjectParamChange = (
     value: string | number | Array<string | number>,
     index: number,
-    key: string
+    key: string,
+    subKey?: number | string
   ) => {
     setParamsArray((prevParamsArray) => {
       const updatedParamsArray = [...prevParamsArray];
 
-      // Reference to the specific placeholder
-      let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
+      if (subKey === undefined) {
+        let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
 
-      // Check the type and update the placeholder accordingly
-      placeholder = handlePlaceholderChange(placeholder, value);
+        placeholder = handlePlaceholderChange(placeholder, value);
 
-      // Update the placeholder in the deep structure
-      updatedParamsArray[index].value[key].placeholder = placeholder;
+        updatedParamsArray[index].value[key].placeholder = placeholder;
 
-      return updatedParamsArray;
+        return updatedParamsArray;
+      } else {
+        let placeholder =
+          updatedParamsArray[index]?.value[subKey][key]?.placeholder;
+
+        placeholder = handlePlaceholderChange(placeholder, value);
+
+        updatedParamsArray[index].value[subKey][key].placeholder = placeholder;
+
+        return updatedParamsArray;
+      }
     });
   };
 
@@ -310,7 +319,7 @@ const Builder = () => {
   }: {
     param: any;
     index: number;
-    subKey?: string;
+    subKey?: string | number;
   }) => {
     return (
       <>
@@ -326,7 +335,12 @@ const Builder = () => {
                   <textarea
                     value={value.placeholder?.join(",")}
                     onChange={(e) => {
-                      handleObjectParamChange(e.target.value, index, key);
+                      handleObjectParamChange(
+                        e.target.value,
+                        index,
+                        key,
+                        subKey
+                      );
                     }}
                     className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                   />
@@ -342,7 +356,12 @@ const Builder = () => {
                       <input
                         value={value.placeholder}
                         onChange={(e) => {
-                          handleObjectParamChange(e.target.value, index, key);
+                          handleObjectParamChange(
+                            e.target.value,
+                            index,
+                            key,
+                            subKey
+                          );
                         }}
                         className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                       />
@@ -539,7 +558,11 @@ const Builder = () => {
                       {param.value.map((option: any, ind: number) => (
                         <div className="mt-3" key={ind}>
                           <p>Option {ind}</p>
-                          <FormatInputField param={option} index={index} />
+                          <FormatInputField
+                            param={option}
+                            index={index}
+                            subKey={ind}
+                          />
                         </div>
                       ))}
                       <button
