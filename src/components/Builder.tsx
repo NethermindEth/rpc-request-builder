@@ -81,6 +81,7 @@ const Builder = () => {
   );
   const [rpcUrl, setRpcUrl] = useState(MAINNET_RPC_URL);
   const [useCustomRpcUrl, setUseCustomRpcUrl] = useState(false);
+  const [isLoading, setisLoading] = useState(false);
 
   const [requestTab, setRequestTab] = useState("raw");
   const [starknetJs, setStarknetJs] = useState(DEFAULT_STARKNET_JS_REQUEST);
@@ -183,6 +184,7 @@ const Builder = () => {
   };
 
   const sendRequest = async () => {
+    setisLoading(true);
     const response = await fetch(rpcUrl, {
       method: "POST",
       headers: {
@@ -192,6 +194,7 @@ const Builder = () => {
     });
     const json = await response.json();
     setResponse(JSON.stringify(json, null, 2));
+    setisLoading(false);
   };
 
   useEffect(() => {
@@ -596,6 +599,7 @@ const Builder = () => {
                 sendRequest();
               }}
               className="bg-[#3e3e43] text-white rounded-sm p-2 w-1/2 mt-2"
+              disabled={isLoading}
             >
               Send Request
             </button>
@@ -717,7 +721,7 @@ const Builder = () => {
                     height="30vh"
                     language="json"
                     theme="vs-dark"
-                    value={response}
+                    value={isLoading ? "Loading..." : response}
                     options={{
                       readOnly: true,
                       fontSize: 14,
@@ -734,7 +738,7 @@ const Builder = () => {
                     height="30vh"
                     language="json"
                     theme="vs-dark"
-                    value={decodedResponse}
+                    value={isLoading ? "Loading..." : decodedResponse}
                     options={{
                       readOnly: true,
                       fontSize: 14,
@@ -754,21 +758,5 @@ const Builder = () => {
     </>
   );
 };
-
-const InputField = ({
-  onChange,
-  defaultValue,
-  className,
-}: {
-  onChange: any;
-  defaultValue: any;
-  className: any;
-}) => (
-  <input
-    onChange={onChange}
-    className={className}
-    defaultValue={defaultValue}
-  />
-);
 
 export default Builder;
