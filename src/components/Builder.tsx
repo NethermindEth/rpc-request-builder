@@ -7,6 +7,7 @@ import {
   MAINNET_RPC_URL,
   GOERLI_RPC_URL,
   SEPOLIA_RPC_URL,
+  CURL_HEADER,
   DEFAULT_CURL_REQUEST,
   DEFAULT_STARKNET_JS_REQUEST,
   DEFAULT_RAW_REQUEST,
@@ -245,7 +246,7 @@ const Builder = () => {
       const jsonDataString = JSON.stringify(jsonObject, null, 4);
 
       const curlPart = `curl --location '${rpcUrl}' \\\n`;
-      const curlCommand = `${curlPart}--data '${jsonDataString}'`;
+      const curlCommand = `${curlPart}${CURL_HEADER}\n--data '${jsonDataString}'`;
       const newStarknetJsParams = updateStarknetJsParams(params);
       setRawRequest(jsonDataString);
       setCurlRequest(curlCommand);

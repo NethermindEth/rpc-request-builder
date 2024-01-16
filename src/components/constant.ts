@@ -12,7 +12,9 @@ provider.getSpecVersion().then(specVersion => {
     console.log(specVersion);
 });
 `;
+export const CURL_HEADER = `--header 'Content-Type: application/json' \\`;
 export const DEFAULT_CURL_REQUEST = `curl --location 'https://free-rpc.nethermind.io/mainnet-juno/' \\
+${CURL_HEADER}
 --data '{
     "jsonrpc":"2.0",
     "method":"starknet_specVersion",
