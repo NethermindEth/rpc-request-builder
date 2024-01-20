@@ -340,7 +340,7 @@ const Builder = () => {
                     value={value.placeholder?.join(",")}
                     onChange={(e) => {
                       handleObjectParamChange(
-                        e.target.value,
+                        e.target.value || "0x",
                         index,
                         key,
                         subKey
@@ -361,7 +361,7 @@ const Builder = () => {
                         value={value.placeholder}
                         onChange={(e) => {
                           handleObjectParamChange(
-                            e.target.value,
+                            e.target.value || "0x",
                             index,
                             key,
                             subKey
@@ -460,7 +460,10 @@ const Builder = () => {
                   {Array.isArray(param.placeholder) ? (
                     <textarea
                       onChange={(e) => {
-                        handleOrdinaryParamChange(e.target.value, index);
+                        handleOrdinaryParamChange(
+                          e.target.value || "0x",
+                          index
+                        );
                       }}
                       className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                       value={param.placeholder?.join(",")}
@@ -468,7 +471,10 @@ const Builder = () => {
                   ) : (
                     <input
                       onChange={(e) => {
-                        handleOrdinaryParamChange(e.target.value, index);
+                        handleOrdinaryParamChange(
+                          e.target.value || "0x",
+                          index
+                        );
                       }}
                       className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                       value={param.placeholder}
