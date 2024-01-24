@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Methods } from "@/api/rpcspec";
 import Editor from "@monaco-editor/react";
 import {
@@ -79,6 +79,7 @@ const Builder = () => {
   const [paramsArray, setParamsArray] = useState(
     Methods[0].params ? transformParamsToArray(Methods[0].params) : []
   );
+
   const [rpcUrl, setRpcUrl] = useState(MAINNET_RPC_URL);
   const [useCustomRpcUrl, setUseCustomRpcUrl] = useState(false);
   const [isLoading, setisLoading] = useState(false);
@@ -259,6 +260,50 @@ const Builder = () => {
     updateMethod(method.name, paramsArray);
   }, [method, paramsArray, rpcUrl]);
 
+  /** --------------------------------ENSURE INPUT FOCUS-------------------------------- */
+
+  // Initialize a refs map
+  const inputRefs = useRef({});
+  const [inputFocused, setInputFocused] = useState(false);
+  const [focusKey, setFocusKey] = useState("");
+  const [currentCursorPosition, setCurrentCursorPosition] = useState<
+    number | null
+  >();
+
+  // Function to create a unique identifier for each input
+  const createRefKey = (index: number, subKey: string | number = "") =>
+    `${index}-${subKey}`;
+
+  // Function to focus an input
+  const focusInput = (key: string) => {
+    setTimeout(() => {
+      const inputElement = (
+        inputRefs.current as { [key: string]: HTMLInputElement }
+      )[key];
+      if (inputElement) {
+        inputElement.focus();
+
+        if (
+          currentCursorPosition !== undefined &&
+          currentCursorPosition !== null
+        ) {
+          // Restore the cursor position after the component re-renders
+          inputElement.selectionStart = currentCursorPosition;
+          inputElement.selectionEnd = currentCursorPosition;
+        }
+      }
+    }, 0);
+  };
+
+  useEffect(() => {
+    if (inputFocused) {
+      focusInput(focusKey);
+      setInputFocused(false); // Reset the trigger
+    }
+  }, [inputFocused, focusKey]);
+
+  /** --------------------------------ENSURE INPUT FOCUS-------------------------------- */
+
   const handlePlaceholderChange = (
     placeholder: string | number | Array<string | number>,
     newValue: any
@@ -273,8 +318,12 @@ const Builder = () => {
 
   const handleOrdinaryParamChange = (
     value: string | number | Array<string | number>,
-    index: number
+    index: number,
+    key?: string | number,
+    cursorPosition?: number
   ) => {
+    setCurrentCursorPosition(cursorPosition);
+
     setParamsArray((prevParamsArray) => {
       const updatedParamsArray = [...prevParamsArray];
       let placeholder = updatedParamsArray[index]?.value?.placeholder;
@@ -284,14 +333,20 @@ const Builder = () => {
       updatedParamsArray[index].value.placeholder = placeholder;
       return updatedParamsArray;
     });
+
+    setFocusKey(createRefKey(index, key));
+    setInputFocused(true);
   };
 
   const handleObjectParamChange = (
     value: string | number | Array<string | number>,
     index: number,
     key: string,
-    subKey?: number | string
+    subKey?: number | string,
+    cursorPosition?: number
   ) => {
+    setCurrentCursorPosition(cursorPosition);
+
     setParamsArray((prevParamsArray) => {
       const updatedParamsArray = [...prevParamsArray];
 
@@ -314,6 +369,9 @@ const Builder = () => {
         return updatedParamsArray;
       }
     });
+
+    setFocusKey(createRefKey(index, key));
+    setInputFocused(true);
   };
 
   const FormatInputField = ({
@@ -325,6 +383,14 @@ const Builder = () => {
     index: number;
     subKey?: string | number;
   }) => {
+    const setRef = (el: any, index: number, subKey: string | number = "") => {
+      if (el) {
+        (inputRefs.current as { [key: string]: HTMLInputElement })[
+          createRefKey(index, subKey)
+        ] = el;
+      }
+    };
+
     return (
       <>
         {
@@ -337,13 +403,15 @@ const Builder = () => {
                 <p className="mt-3 text-xs">{value.description}</p>
                 {Array.isArray(value.placeholder) ? (
                   <textarea
+                    ref={(el) => setRef(el, index, key)}
                     value={value.placeholder?.join(",")}
                     onChange={(e) => {
                       handleObjectParamChange(
                         e.target.value || "0x",
                         index,
                         key,
-                        subKey
+                        subKey,
+                        e.target.selectionStart
                       );
                     }}
                     className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
@@ -358,6 +426,7 @@ const Builder = () => {
                       />
                     ) : (
                       <input
+                        ref={(el) => setRef(el, index, key)}
                         value={value.placeholder}
                         onChange={(e) => {
                           handleObjectParamChange(
@@ -407,7 +476,10 @@ const Builder = () => {
                     }
                   </select>
                   <input
+                    ref={(el) => setRef(el, index, subKey)}
                     onChange={(e) => {
+                      setCurrentCursorPosition(e.target.selectionStart);
+
                       setParamsArray((prevParamsArray) => {
                         const updatedParamsArray = [...prevParamsArray];
                         let selectedIndex =
@@ -446,6 +518,9 @@ const Builder = () => {
 
                         return updatedParamsArray;
                       });
+
+                      setFocusKey(createRefKey(index, subKey));
+                      setInputFocused(true);
                     }}
                     className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                     value={
@@ -459,10 +534,13 @@ const Builder = () => {
                 <div>
                   {Array.isArray(param.placeholder) ? (
                     <textarea
+                      ref={(el) => setRef(el, index, subKey)}
                       onChange={(e) => {
                         handleOrdinaryParamChange(
                           e.target.value || "0x",
-                          index
+                          index,
+                          subKey,
+                          e.target.selectionStart
                         );
                       }}
                       className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
@@ -470,10 +548,12 @@ const Builder = () => {
                     />
                   ) : (
                     <input
+                      ref={(el) => setRef(el, index, subKey)}
                       onChange={(e) => {
                         handleOrdinaryParamChange(
                           e.target.value || "0x",
-                          index
+                          index,
+                          subKey
                         );
                       }}
                       className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
