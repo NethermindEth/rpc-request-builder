@@ -198,6 +198,19 @@ const Builder = () => {
     setisLoading(false);
   };
 
+  const getCustomRpcUrl = () => {
+    // get custom rpc url from local storage
+    const customRpcUrl = localStorage.getItem("customRpcUrl");
+    if (customRpcUrl) {
+      setRpcUrl(customRpcUrl);
+      setUseCustomRpcUrl(true);
+    }
+  };
+
+  useEffect(() => {
+    getCustomRpcUrl();
+  }, []);
+
   useEffect(() => {
     const responseJSON = JSON.parse(response);
     const decodedResponseJSON = responseJSON.result
@@ -580,8 +593,13 @@ const Builder = () => {
                 <input
                   onChange={(e) => {
                     let oldRpcUrl = rpcUrl;
-                    setRpcUrl(e.target.value);
-                    updateRpcUrl(e.target.value, oldRpcUrl);
+                    let newRpcUrl = e.target.value;
+
+                    // store custom rpc url in local storage
+                    localStorage.setItem("customRpcUrl", newRpcUrl);
+
+                    setRpcUrl(newRpcUrl);
+                    updateRpcUrl(newRpcUrl, oldRpcUrl);
                   }}
                   className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full"
                   value={rpcUrl}
@@ -611,7 +629,7 @@ const Builder = () => {
                   <option value={SEPOLIA_RPC_URL}>Sepolia</option>
                 </select>
                 <p
-                  onClick={() => setUseCustomRpcUrl(!useCustomRpcUrl)}
+                  onClick={() => getCustomRpcUrl()}
                   className="text-sm my-3 text-[#ff4b00] cursor-pointer"
                 >
                   Use custom RPC URL
