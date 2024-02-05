@@ -206,7 +206,6 @@ const Builder = () => {
   };
 
   const getCustomRpcUrl = () => {
-    console.log("getting custom rpc url");
     // get custom rpc url from local storage
     const customRpcUrl = localStorage.getItem("customRpcUrl");
     if (customRpcUrl) {
@@ -639,6 +638,7 @@ const Builder = () => {
                 <p
                   onClick={() => {
                     getCustomRpcUrl();
+                    setUseCustomRpcUrl(!useCustomRpcUrl);
                   }}
                   className="text-sm my-3 text-[#ff4b00] cursor-pointer"
                 >
