@@ -206,6 +206,7 @@ const Builder = () => {
   };
 
   const getCustomRpcUrl = () => {
+    console.log("getting custom rpc url");
     // get custom rpc url from local storage
     const customRpcUrl = localStorage.getItem("customRpcUrl");
     if (customRpcUrl) {
@@ -636,7 +637,9 @@ const Builder = () => {
                   <option value={SEPOLIA_RPC_URL}>Sepolia</option>
                 </select>
                 <p
-                  onClick={() => getCustomRpcUrl()}
+                  onClick={() => {
+                    getCustomRpcUrl();
+                  }}
                   className="text-sm my-3 text-[#ff4b00] cursor-pointer"
                 >
                   Use custom RPC URL
