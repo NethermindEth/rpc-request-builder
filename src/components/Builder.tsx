@@ -186,16 +186,23 @@ const Builder = () => {
 
   const sendRequest = async () => {
     setisLoading(true);
-    const response = await fetch(rpcUrl, {
+    await fetch(rpcUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: rawRequest,
-    });
-    const json = await response.json();
-    setResponse(JSON.stringify(json, null, 2));
-    setisLoading(false);
+    })
+      .then(async (response) => {
+        const json = await response.json();
+        setResponse(JSON.stringify(json, null, 2));
+      })
+      .catch((error) => {
+        setResponse(JSON.stringify({ error: error.message }, null, 2));
+      })
+      .finally(() => {
+        setisLoading(false);
+      });
   };
 
   const getCustomRpcUrl = () => {
