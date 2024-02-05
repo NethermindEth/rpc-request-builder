@@ -768,7 +768,7 @@ const Builder = () => {
                 )}
                 {requestTab == "starknetJs" && (
                   <Editor
-                    height="30vh"
+                    height="50vh"
                     language="javascript"
                     theme="vs-dark"
                     value={starknetJs}
