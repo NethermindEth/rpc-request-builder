@@ -133,6 +133,10 @@ const Builder = () => {
   }
 
   const constructParamsArray = (latestParamsArray: any) => {
+    if (latestParamsArray.length === 0) {
+      return [];
+    }
+
     const processPlaceholder = (latestParams: any, isEntryPoint: boolean) => {
       let placeholder = latestParams.placeholder;
       if (isEntryPoint) {
@@ -185,6 +189,7 @@ const Builder = () => {
   };
 
   const sendRequest = async () => {
+    console.log(rawRequest);
     setisLoading(true);
     await fetch(rpcUrl, {
       method: "POST",
@@ -195,12 +200,14 @@ const Builder = () => {
     })
       .then(async (response) => {
         const json = await response.json();
+        console.log(json);
         setResponse(JSON.stringify(json, null, 2));
       })
       .catch((error) => {
+        console.error("Error:", error);
         setResponse(JSON.stringify({ error: error.message }, null, 2));
       })
-      .finally(() => {
+      .finally(async () => {
         setisLoading(false);
       });
   };
