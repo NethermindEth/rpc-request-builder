@@ -15,6 +15,11 @@ import {
   DEFAULT_DECODED_RESPONSE,
 } from "./constant";
 import { selector } from "starknet";
+import {
+  isUrlFromNethermindDomain,
+  extractRpcUrl,
+  extractNodeUrl,
+} from "./utils";
 
 const formatName = (name: string) => {
   // Make first letter uppercase
@@ -82,6 +87,7 @@ const Builder = () => {
 
   const [rpcUrl, setRpcUrl] = useState(MAINNET_RPC_URL);
   const [useCustomRpcUrl, setUseCustomRpcUrl] = useState(false);
+  const [apiKey, setApiKey] = useState("");
   const [isLoading, setisLoading] = useState(false);
 
   const [requestTab, setRequestTab] = useState("raw");
@@ -108,6 +114,13 @@ const Builder = () => {
     }
   };
 
+  const getRpcUrl = (rpcUrl: string) => {
+    if (isUrlFromNethermindDomain(rpcUrl) && apiKey) {
+      return `${rpcUrl}?apikey=${apiKey}`;
+    }
+    return rpcUrl;
+  };
+
   const updateRpcUrl = (newRpcUrl: string, oldRpcUrl: string) => {
     // remove everything before the first \
     let dataPart = curlRequest.split("\\")[1];
@@ -117,15 +130,23 @@ const Builder = () => {
     setCurlRequest(newCurlRequest);
 
     // Replace oldRpcUrl with newRpcUrl
-    let newStarknetJs = starknetJs.replace(oldRpcUrl, newRpcUrl);
-    setStarknetJs(newStarknetJs);
+    newRpcUrl = getRpcUrl(newRpcUrl);
 
-    // update all methods as well
-    Methods.forEach((method) => {
-      let newStarknetJs = method.starknetJs.replace(oldRpcUrl, newRpcUrl);
-      method.starknetJs = newStarknetJs;
-    });
-    return newCurlRequest;
+    const extractedRpcUrl = extractNodeUrl(starknetJs);
+    if (extractedRpcUrl) {
+      let newStarknetJs = starknetJs.replace(oldRpcUrl, newRpcUrl);
+      setStarknetJs(newStarknetJs);
+
+      // update all methods as well
+      Methods.forEach((method) => {
+        let newStarknetJs = method.starknetJs.replace(
+          extractedRpcUrl,
+          newRpcUrl
+        );
+        method.starknetJs = newStarknetJs;
+      });
+      return newCurlRequest;
+    }
   };
 
   interface ParamsObject {
@@ -190,7 +211,8 @@ const Builder = () => {
 
   const sendRequest = async () => {
     setisLoading(true);
-    await fetch(rpcUrl, {
+    const requestRpcUrl = getRpcUrl(rpcUrl);
+    await fetch(requestRpcUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -263,17 +285,6 @@ const Builder = () => {
       return updatedCode;
     };
 
-    const extractRpcUrl = (curlCommand: string) => {
-      const rpcUrlPattern = /--location\s+'([^']+)'/;
-      const match = curlCommand.match(rpcUrlPattern);
-
-      if (match && match[1]) {
-        return match[1];
-      } else {
-        return null;
-      }
-    };
-
     const updateMethod = (methodName: string, latestParamsArray: any) => {
       const params = constructParamsArray(latestParamsArray);
       const jsonObject = {
@@ -290,7 +301,8 @@ const Builder = () => {
         updateRpcUrl(rpcUrl, oldRpcUrl);
       }
 
-      const curlPart = `curl --location '${rpcUrl}' \\\n`;
+      let newRpcUrl = getRpcUrl(rpcUrl);
+      const curlPart = `curl --location '${newRpcUrl}' \\\n`;
       const curlCommand = `${curlPart}${CURL_HEADER}\n--data '${jsonDataString}'`;
       const newStarknetJsRequest = updateStarknetJsParams(params);
       setRawRequest(jsonDataString);
@@ -299,7 +311,7 @@ const Builder = () => {
     };
 
     updateMethod(method.name, paramsArray);
-  }, [method, paramsArray, rpcUrl]);
+  }, [method, paramsArray, rpcUrl, apiKey]);
 
   /** --------------------------------ENSURE INPUT FOCUS-------------------------------- */
 
@@ -667,7 +679,29 @@ const Builder = () => {
                 </p>
               </div>
             )}
+            {isUrlFromNethermindDomain(rpcUrl) && (
+              <div>
+                <input
+                  onChange={(e) => {
+                    const newApiKey = e.target.value;
+                    setApiKey(newApiKey);
+                  }}
+                  className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                  placeholder="API Key"
+                  type="password"
+                />
 
+                <p className="text-sm my-3 text-[#ff4b00] cursor-pointer">
+                  <a
+                    href="https://voyager.online/?signin=true&utm_campaign=rpc-request-builder"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Get Free API Key
+                  </a>
+                </p>
+              </div>
+            )}
             <select
               onChange={(e) => {
                 const index = parseInt(e.target.value);
