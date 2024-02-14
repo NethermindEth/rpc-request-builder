@@ -263,6 +263,17 @@ const Builder = () => {
       return updatedCode;
     };
 
+    const extractRpcUrl = (curlCommand: string) => {
+      const rpcUrlPattern = /--location\s+'([^']+)'/;
+      const match = curlCommand.match(rpcUrlPattern);
+
+      if (match && match[1]) {
+        return match[1];
+      } else {
+        return null;
+      }
+    };
+
     const updateMethod = (methodName: string, latestParamsArray: any) => {
       const params = constructParamsArray(latestParamsArray);
       const jsonObject = {
@@ -273,12 +284,18 @@ const Builder = () => {
       };
       const jsonDataString = JSON.stringify(jsonObject, null, 4);
 
+      const oldRpcUrl = extractRpcUrl(curlRequest);
+      // replace the old rpc url with the new one in the curl request
+      if (oldRpcUrl) {
+        updateRpcUrl(rpcUrl, oldRpcUrl);
+      }
+
       const curlPart = `curl --location '${rpcUrl}' \\\n`;
       const curlCommand = `${curlPart}${CURL_HEADER}\n--data '${jsonDataString}'`;
-      const newStarknetJsParams = updateStarknetJsParams(params);
+      const newStarknetJsRequest = updateStarknetJsParams(params);
       setRawRequest(jsonDataString);
       setCurlRequest(curlCommand);
-      setStarknetJs(newStarknetJsParams);
+      setStarknetJs(newStarknetJsRequest);
     };
 
     updateMethod(method.name, paramsArray);
