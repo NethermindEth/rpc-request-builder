@@ -38,7 +38,32 @@ func main() {
 
 	fmt.Println("SpecVersion:", specVersion)
 }`;
-export const DEFAULT_STARKNET_RS_REQUEST = ``;
+export const DEFAULT_STARKNET_RS_REQUEST = `use starknet::{
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider.
+    spec_version()
+    .await;
+  match result {
+    Ok(spec_version) => {
+      println!("{spec_version:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`;
 export const CURL_HEADER = `--header 'Content-Type: application/json' \\`;
 export const DEFAULT_CURL_REQUEST = `curl --location 'https://free-rpc.nethermind.io/mainnet-juno/' \\
 ${CURL_HEADER}

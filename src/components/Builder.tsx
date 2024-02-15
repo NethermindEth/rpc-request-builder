@@ -21,6 +21,7 @@ import {
   isUrlFromNethermindDomain,
   extractRpcUrl,
   extractNodeUrl,
+  capitalize,
 } from "./utils";
 
 const formatName = (name: string) => {
@@ -111,7 +112,11 @@ const Builder = () => {
           ? rawRequest
           : requestTab == "curl"
           ? curlRequest
-          : starknetJs
+          : requestTab === "starknetJs"
+          ? starknetJs
+          : requestTab === "starknetGo"
+          ? starknetGo
+          : starknetRs
       );
     } else {
       navigator.clipboard.writeText(response);
@@ -319,7 +324,63 @@ const Builder = () => {
     const updateStarknetRsParams = (currentParamsObj: {
       [key: string]: any;
     }) => {
-      return method.starknetRs; // TODO: Implement this
+      const regexPattern = /provider\s*\.(\w+)\((.*)\s*\.await;/;
+      const codeSnippet = method.starknetRs;
+
+      const updatedCode = codeSnippet.replace(
+        regexPattern,
+        (match, methodName, params) => {
+          const values = Object.entries(currentParamsObj).flatMap(
+            ([key, value]) => {
+              if (key === "block_id") {
+                if (
+                  typeof value === "string" &&
+                  ["latest", "pending"].includes(value)
+                ) {
+                  return `BlockId::Tag(BlockTag::${capitalize(value)})`;
+                } else if (typeof value === "object") {
+                  if (value.block_hash !== undefined) {
+                    const { block_hash: blockHash } = value as {
+                      block_hash: string;
+                    };
+                    return `BlockId::Hash(felt!("${blockHash}"))`;
+                  } else if (value.block_number !== undefined) {
+                    const { block_number: blockNumber } = value as {
+                      block_number: number;
+                    };
+                    return `BlockId::Number(${blockNumber})`;
+                  }
+                }
+              } else if (typeof value === "object" && !Array.isArray(value)) {
+                // If value is an object, return its stringified values
+                return Object.values(value).map((val) => {
+                  if (typeof val === "string") {
+                    if (val.startsWith("0x")) {
+                      return `felt!("${val}")`;
+                    }
+                    return `"${val}"`;
+                  }
+                  return val;
+                });
+              } else if (typeof value === "string") {
+                if (value.startsWith("0x")) {
+                  return `felt!("${value}")`;
+                }
+                // If value is a string, return it with quotes
+                return `"${value}"`;
+              }
+              return value; // Return other types (like numbers) as is
+            }
+          );
+
+          let stringifiedParams = values.join(", ");
+          return `provider
+    .${methodName}(${stringifiedParams})
+    .await;`;
+        }
+      );
+
+      return updatedCode;
     };
 
     const updateMethod = (methodName: string, latestParamsArray: any) => {
@@ -924,6 +985,23 @@ const Builder = () => {
                     language="go"
                     theme="vs-dark"
                     value={starknetGo}
+                    options={{
+                      readOnly: true,
+                      fontSize: 14,
+                      minimap: { enabled: false },
+                      scrollBeyondLastLine: false,
+                      scrollbar: {
+                        horizontal: "hidden",
+                      },
+                    }}
+                  />
+                )}
+                {requestTab == "starknetRs" && (
+                  <Editor
+                    height="50vh"
+                    language="rust"
+                    theme="vs-dark"
+                    value={starknetRs}
                     options={{
                       readOnly: true,
                       fontSize: 14,
