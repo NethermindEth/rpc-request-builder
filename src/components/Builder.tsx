@@ -10,6 +10,8 @@ import {
   CURL_HEADER,
   DEFAULT_CURL_REQUEST,
   DEFAULT_STARKNET_JS_REQUEST,
+  DEFAULT_STARKNET_GO_REQUEST,
+  DEFAULT_STARKNET_RS_REQUEST,
   DEFAULT_RAW_REQUEST,
   DEFAULT_RAW_RESPONSE,
   DEFAULT_DECODED_RESPONSE,
@@ -92,6 +94,8 @@ const Builder = () => {
 
   const [requestTab, setRequestTab] = useState("raw");
   const [starknetJs, setStarknetJs] = useState(DEFAULT_STARKNET_JS_REQUEST);
+  const [starknetGo, setStarknetGo] = useState(DEFAULT_STARKNET_GO_REQUEST);
+  const [starknetRs, setStarknetRs] = useState(DEFAULT_STARKNET_RS_REQUEST);
   const [curlRequest, setCurlRequest] = useState(DEFAULT_CURL_REQUEST);
   const [rawRequest, setRawRequest] = useState(DEFAULT_RAW_REQUEST);
 
@@ -134,8 +138,17 @@ const Builder = () => {
 
     const extractedRpcUrl = extractNodeUrl(starknetJs);
     if (extractedRpcUrl) {
+      // update the nodeUrl in starknet.js
       let newStarknetJs = starknetJs.replace(oldRpcUrl, newRpcUrl);
       setStarknetJs(newStarknetJs);
+
+      // update the nodeUrl in starknet.go
+      let newStarknetGo = starknetGo.replace(oldRpcUrl, newRpcUrl);
+      setStarknetGo(newStarknetGo);
+
+      // update the nodeUrl in starknet.rs
+      let newStarknetRs = starknetRs.replace(oldRpcUrl, newRpcUrl);
+      setStarknetRs(newStarknetRs);
 
       // update all methods as well
       Methods.forEach((method) => {
@@ -144,6 +157,18 @@ const Builder = () => {
           newRpcUrl
         );
         method.starknetJs = newStarknetJs;
+
+        let newStarknetGo = method.starknetGo.replace(
+          extractedRpcUrl,
+          newRpcUrl
+        );
+        method.starknetGo = newStarknetGo;
+
+        let newStarknetRs = method.starknetRs.replace(
+          extractedRpcUrl,
+          newRpcUrl
+        );
+        method.starknetRs = newStarknetRs;
       });
       return newCurlRequest;
     }
@@ -285,6 +310,18 @@ const Builder = () => {
       return updatedCode;
     };
 
+    const updateStarknetGoParams = (currentParamsObj: {
+      [key: string]: any;
+    }) => {
+      return method.starknetGo; // TODO: Implement this
+    };
+
+    const updateStarknetRsParams = (currentParamsObj: {
+      [key: string]: any;
+    }) => {
+      return method.starknetRs; // TODO: Implement this
+    };
+
     const updateMethod = (methodName: string, latestParamsArray: any) => {
       const params = constructParamsArray(latestParamsArray);
       const jsonObject = {
@@ -294,6 +331,7 @@ const Builder = () => {
         id: 1,
       };
       const jsonDataString = JSON.stringify(jsonObject, null, 4);
+      setRawRequest(jsonDataString);
 
       const oldRpcUrl = extractRpcUrl(curlRequest);
       // replace the old rpc url with the new one in the curl request
@@ -304,10 +342,16 @@ const Builder = () => {
       let newRpcUrl = getRpcUrl(rpcUrl);
       const curlPart = `curl --location '${newRpcUrl}' \\\n`;
       const curlCommand = `${curlPart}${CURL_HEADER}\n--data '${jsonDataString}'`;
-      const newStarknetJsRequest = updateStarknetJsParams(params);
-      setRawRequest(jsonDataString);
       setCurlRequest(curlCommand);
+
+      const newStarknetJsRequest = updateStarknetJsParams(params);
       setStarknetJs(newStarknetJsRequest);
+
+      const newStarknetGoRequest = updateStarknetGoParams(params);
+      setStarknetGo(newStarknetGoRequest);
+
+      const newStarknetRsRequest = updateStarknetRsParams(params);
+      setStarknetRs(newStarknetRsRequest);
     };
 
     updateMethod(method.name, paramsArray);
@@ -799,6 +843,22 @@ const Builder = () => {
                     starknet.js
                   </li>
                 )}
+                {method.starknetGo && (
+                  <li
+                    onClick={() => setRequestTab("starknetGo")}
+                    className="p-3 cursor-pointer"
+                  >
+                    starknet.go
+                  </li>
+                )}
+                {method.starknetRs && (
+                  <li
+                    onClick={() => setRequestTab("starknetRs")}
+                    className="p-3 cursor-pointer"
+                  >
+                    starknet.rs
+                  </li>
+                )}
               </ul>
               <div className="bg-[#1e1e1e]">
                 <button
@@ -813,6 +873,23 @@ const Builder = () => {
                     language="json"
                     theme="vs-dark"
                     value={rawRequest}
+                    options={{
+                      readOnly: true,
+                      fontSize: 14,
+                      minimap: { enabled: false },
+                      scrollBeyondLastLine: false,
+                      scrollbar: {
+                        horizontal: "hidden",
+                      },
+                    }}
+                  />
+                )}
+                {requestTab == "curl" && (
+                  <Editor
+                    height="30vh"
+                    language="shell"
+                    theme="vs-dark"
+                    value={curlRequest}
                     options={{
                       readOnly: true,
                       fontSize: 14,
@@ -841,12 +918,12 @@ const Builder = () => {
                     }}
                   />
                 )}
-                {requestTab == "curl" && (
+                {requestTab == "starknetGo" && (
                   <Editor
-                    height="30vh"
-                    language="shell"
+                    height="50vh"
+                    language="go"
                     theme="vs-dark"
-                    value={curlRequest}
+                    value={starknetGo}
                     options={{
                       readOnly: true,
                       fontSize: 14,

@@ -170,6 +170,33 @@ const ReadMethods = [
     console.log(specVersion);
 });
     `,
+    starknetGo: `package main
+
+    import (
+      "context"
+      "fmt"
+      "log"
+    
+      "github.com/NethermindEth/starknet.go/rpc"
+    )
+    
+    func main() {
+      rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
+    
+      client, err := rpc.NewClient(rpcUrl)
+      if err != nil {
+        log.Fatal(err)
+      }
+    
+      provider := rpc.NewProvider(client)
+      specVersion, err := provider.SpecVersion(context.Background())
+      if err != nil {
+        log.Fatal(err)
+      }
+    
+      fmt.Println("SpecVersion:", specVersion)
+    }`,
+    starknetRs: ``,
   },
 
   // Get block information with transaction hashes given the block id
@@ -182,6 +209,8 @@ const ReadMethods = [
   console.log(block);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get block information with full transactions given the block id
@@ -194,6 +223,8 @@ const ReadMethods = [
   console.log(block);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the information about the result of executing the requested block
@@ -206,6 +237,8 @@ const ReadMethods = [
     console.log(stateUpdate);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the value of the storage at the given address and key
@@ -224,6 +257,8 @@ const ReadMethods = [
     console.log(storage);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Gets the transaction status (possibly reflecting that the tx is still in the mempool, or dropped from it)
@@ -236,6 +271,8 @@ const ReadMethods = [
     console.log(transactionStatus);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the details and status of a submitted transaction
@@ -248,6 +285,8 @@ const ReadMethods = [
   console.log(transaction);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the details of a transaction by a given block id and index
@@ -264,6 +303,8 @@ const ReadMethods = [
   console.log(transaction);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the transaction receipt by the transaction hash
@@ -276,6 +317,8 @@ const ReadMethods = [
   console.log(transactionReceipt);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the contract class definition in the given block associated with the given hash
@@ -289,6 +332,8 @@ const ReadMethods = [
     console.log(class);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the contract class hash in the given block for the contract deployed at the given address
@@ -302,6 +347,8 @@ const ReadMethods = [
     console.log(classHash);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the contract class definition in the given block at the given address
@@ -315,6 +362,8 @@ const ReadMethods = [
     console.log(class);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the number of transactions in a block given a block id
@@ -327,6 +376,8 @@ const ReadMethods = [
     console.log(transactionCount);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Call a StarkNet function without creating a StarkNet transaction
@@ -337,6 +388,8 @@ const ReadMethods = [
       block_id,
     },
     starknetJs: ``,
+    starknetGo: ``,
+    starknetRs: ``,
     // starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
     // const { RpcProvider } = require('starknet');
 
@@ -369,6 +422,8 @@ const ReadMethods = [
       block_id,
     },
     starknetJs: ``,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Estimate the L2 fee of a message sent on L1
@@ -387,6 +442,8 @@ const ReadMethods = [
       block_id,
     },
     starknetJs: ``,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the most recent accepted block number
@@ -397,6 +454,8 @@ const ReadMethods = [
     console.log(blockNumber);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the most recent accepted block hash and number
@@ -407,6 +466,8 @@ const ReadMethods = [
     console.log(blockHashAndNumber);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Return the currently configured StarkNet chain id
@@ -417,6 +478,8 @@ const ReadMethods = [
     console.log(chainId);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Returns an object about the sync status, or false if the node is not syncing
@@ -427,6 +490,8 @@ const ReadMethods = [
     console.log(syncing);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Returns all events matching the given filter
@@ -458,6 +523,8 @@ const ReadMethods = [
       },
     },
     starknetJs: ``,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Get the nonce associated with the given address in the given block
@@ -471,6 +538,8 @@ const ReadMethods = [
     console.log(nonce);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 ];
 
@@ -482,6 +551,8 @@ const WriteMethods = [
       invoke_transaction: BROADCASTED_INVOKE_TXN,
     },
     starknetJs: ``,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   //   // Submit a new class declaration transaction
@@ -500,6 +571,8 @@ const WriteMethods = [
       deploy_account_transaction: BROADCASTED_DEPLOY_ACCOUNT_TXN,
     },
     starknetJs: ``,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 ];
 
@@ -512,6 +585,8 @@ const TraceMethods = [
     console.log(transactionTrace);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Returns the execution traces of all transactions included in the given block
@@ -524,6 +599,8 @@ const TraceMethods = [
     console.log(transactionTraces);
 });
     `,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 
   // Simulate a given sequence of transactions on the requested state, and generate the execution traces. If one of the transactions is reverted, raises CONTRACT_ERROR
@@ -541,6 +618,8 @@ const TraceMethods = [
       block_id,
     },
     starknetJs: ``,
+    starknetGo: ``,
+    starknetRs: ``,
   },
 ];
 
