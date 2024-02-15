@@ -12,6 +12,33 @@ provider.getSpecVersion().then(specVersion => {
     console.log(specVersion);
 });
 `;
+export const DEFAULT_STARKNET_GO_REQUEST = `package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/NethermindEth/starknet.go/rpc"
+)
+
+func main() {
+	rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
+
+	client, err := rpc.NewClient(rpcUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	provider := rpc.NewProvider(client)
+	specVersion, err := provider.SpecVersion(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("SpecVersion:", specVersion)
+}`;
+export const DEFAULT_STARKNET_RS_REQUEST = ``;
 export const CURL_HEADER = `--header 'Content-Type: application/json' \\`;
 export const DEFAULT_CURL_REQUEST = `curl --location 'https://free-rpc.nethermind.io/mainnet-juno/' \\
 ${CURL_HEADER}
