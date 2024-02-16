@@ -7,6 +7,39 @@ const provider = new RpcProvider({
 
 `;
 
+const STARKNET_RS_PREFIX = `use starknet::{
+  macros::felt,
+  providers::{
+      jsonrpc::{HttpTransport, JsonRpcClient},
+      Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+      Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  `;
+
+const STARKNET_RS_PREFIX_WITH_BLOCKID = `use starknet::{
+  core::types::{BlockId, BlockTag},
+  macros::felt,
+  providers::{
+      jsonrpc::{HttpTransport, JsonRpcClient},
+      Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+      Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  `;
+
 const block_id = {
   placeholder: "latest",
   index: 0,
@@ -196,7 +229,32 @@ const ReadMethods = [
     
       fmt.Println("SpecVersion:", specVersion)
     }`,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+      providers::{
+        jsonrpc::{HttpTransport, JsonRpcClient},
+        Provider, Url,
+      },
+    };
+        
+    #[tokio::main]
+    async fn main() {
+      let provider = JsonRpcClient::new(HttpTransport::new(
+        Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+     
+      let result = provider.
+        spec_version()
+        .await;
+      match result {
+        Ok(spec_version) => {
+          println!("{spec_version:#?}");
+        }
+        Err(err) => {
+          eprintln!("Error: {err}");
+        }
+      }
+    }
+    `,
   },
 
   // Get block information with transaction hashes given the block id
@@ -272,7 +330,21 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `${STARKNET_RS_PREFIX}let result = provider
+        .get_transaction_status(felt!(
+            "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"
+        ))
+        .await;
+    match result {
+        Ok(transaction_status) => {
+            println!("{:#?}", transaction_status);
+        }
+        Err(err) => {
+            eprintln!("Error: {}", err);
+        }
+    }
+}
+`,
   },
 
   // Get the details and status of a submitted transaction
@@ -286,7 +358,21 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `${STARKNET_RS_PREFIX}let result = provider
+          .get_transaction_status(felt!(
+              "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"
+          ))
+          .await;
+      match result {
+          Ok(transaction_status) => {
+              println!("{:#?}", transaction_status);
+          }
+          Err(err) => {
+              eprintln!("Error: {}", err);
+          }
+      }
+  }
+  `,
   },
 
   // Get the details of a transaction by a given block id and index
@@ -304,7 +390,19 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `${STARKNET_RS_PREFIX_WITH_BLOCKID}let result = provider
+          .get_transaction_by_block_id_and_index(BlockId::Tag(BlockTag::Latest), 0)
+          .await;
+      match result {
+          Ok(transaction) => {
+              println!("{:#?}", transaction);
+          }
+          Err(err) => {
+              eprintln!("Error: {}", err);
+          }
+      }
+  }
+  `,
   },
 
   // Get the transaction receipt by the transaction hash
@@ -318,7 +416,21 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `${STARKNET_RS_PREFIX}let result = provider
+          .get_transaction_receipt(felt!(
+              "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"
+          ))
+          .await;
+      match result {
+          Ok(transaction_receipt) => {
+              println!("{:#?}", transaction_receipt);
+          }
+          Err(err) => {
+              eprintln!("Error: {}", err);
+          }
+      }
+  }
+  `,
   },
 
   // Get the contract class definition in the given block associated with the given hash
@@ -377,7 +489,24 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `${STARKNET_RS_PREFIX_WITH_BLOCKID}let provider = JsonRpcClient::new(HttpTransport::new(
+          Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+  
+      
+      let result = provider
+          .get_block_transaction_count(BlockId::Tag(BlockTag::Latest))
+          .await;
+      match result {
+          Ok(transaction_count) => {
+              println!("{:#?}", transaction_count);
+          }
+          Err(err) => {
+              eprintln!("Error: {}", err);
+          }
+      }
+  }
+  `,
   },
 
   // Call a StarkNet function without creating a StarkNet transaction
