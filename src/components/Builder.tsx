@@ -110,8 +110,12 @@ const Builder = () => {
         requestTab == "raw"
           ? rawRequest
           : requestTab == "curl"
-          ? curlRequest
-          : starknetJs
+            ? curlRequest
+            : requestTab == "starknetJs"
+              ? starknetJs
+              : requestTab == "starknetGo"
+                ? starknetGo
+                : starknetRs
       );
     } else {
       navigator.clipboard.writeText(response);
@@ -313,7 +317,34 @@ const Builder = () => {
     const updateStarknetGoParams = (currentParamsObj: {
       [key: string]: any;
     }) => {
-      return method.starknetGo; // TODO: Implement this
+      const regexPattern = /provider\.(\w+)\(([^)]*)\)/;
+      const codeSnippet = method.starknetGo;
+
+      const updatedCode = codeSnippet.replace(
+        regexPattern,
+        (match, methodName, params) => {
+          const values = Object.entries(currentParamsObj).flatMap(
+            ([key, value]) => {
+              // if (key === "")
+              if (typeof value === "object" && !Array.isArray(value)) {
+                // If value is an object, return its stringified values
+                return Object.values(value).map((val) =>
+                  typeof val === "string" ? `"${val}"` : val
+                );
+              } else if (typeof value === "string") {
+                // If value is a string, return it with quotes
+                return `"${value}"`;
+              }
+              return value; // Return other types (like numbers) as is
+            }
+          );
+
+          let stringifiedParams = values.join(", ");
+          return `provider.${methodName}(${stringifiedParams})`;
+        }
+      );
+
+      return updatedCode;
     };
 
     const updateStarknetRsParams = (currentParamsObj: {

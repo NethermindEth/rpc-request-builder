@@ -7,6 +7,23 @@ const provider = new RpcProvider({
 
 `;
 
+const STARKNET_GO_PREFIX = `
+package main
+import (
+  "context"
+  "fmt"
+  "log"
+  "github.com/NethermindEth/starknet.go/rpc"
+)
+    
+func main() {
+  rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
+  client, err := rpc.NewClient(rpcUrl)
+  if err != nil {
+    log.Fatal(err)
+  }
+  provider := rpc.NewProvider(client)`;
+
 const block_id = {
   placeholder: "latest",
   index: 0,
@@ -585,7 +602,14 @@ const TraceMethods = [
     console.log(transactionTrace);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+    result, err := provider.traceTransaction(context.Background())
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("TraceTransaction:", result)
+  }
+    `,
     starknetRs: ``,
   },
 
@@ -599,7 +623,14 @@ const TraceMethods = [
     console.log(transactionTraces);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+    result, err := provider.traceBlockTransactions(context.Background())
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("TraceBlockTransaction:", result)
+  }
+    `,
     starknetRs: ``,
   },
 
@@ -618,7 +649,14 @@ const TraceMethods = [
       block_id,
     },
     starknetJs: ``,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+    result, err := provider.simulateTransactions(context.Background())
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("SimulateTransaction:", result)
+  }
+    `,
     starknetRs: ``,
   },
 ];
