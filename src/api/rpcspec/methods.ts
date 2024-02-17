@@ -7,37 +7,22 @@ const provider = new RpcProvider({
 
 `;
 
-const STARKNET_RS_PREFIX = `use starknet::{
-  macros::felt,
-  providers::{
-      jsonrpc::{HttpTransport, JsonRpcClient},
-      Provider, Url,
-  },
-};
-
-#[tokio::main]
-async fn main() {
-  let provider = JsonRpcClient::new(HttpTransport::new(
-      Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
-  ));
-
-  `;
-
-const STARKNET_RS_PREFIX_WITH_BLOCKID = `use starknet::{
-  core::types::{BlockId, BlockTag},
-  macros::felt,
-  providers::{
-      jsonrpc::{HttpTransport, JsonRpcClient},
-      Provider, Url,
-  },
-};
-
-#[tokio::main]
-async fn main() {
-  let provider = JsonRpcClient::new(HttpTransport::new(
-      Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
-  ));
-
+const STARKNET_GO_PREFIX = `
+import (
+	"context"
+	"fmt"
+	"log"
+	"github.com/NethermindEth/starknet.go/rpc"
+	"github.com/NethermindEth/starknet.go/utils"
+)
+func Class() {
+	rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/?apikey=GGfMLnf5icG5MM68u2mV8gXj83bx2uC9KowlL2yoKQSM71b3"
+	client, err := rpc.NewClient(rpcUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	provider := rpc.NewProvider(client)
+  
   `;
 
 const block_id = {
