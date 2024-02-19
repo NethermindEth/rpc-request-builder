@@ -800,6 +800,7 @@ const WriteMethods = [
     starknetRs: `use starknet::{
   core::types::{
     BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3,
+    DataAvailabilityMode, ResourceBoundsMapping, ResourceBounds
   },
   macros::felt,
   providers::{
@@ -843,13 +844,73 @@ async fn main() {
 `,
   },
   // Submit a new class declaration transaction
-  /* {
+  {
     name: "starknet_addDeclareTransaction",
     params: {
       declare_transaction: BROADCASTED_DECLARE_TXN,
     },
     starknetJs: ``,
-  }, */
+    starknetGo: ``,
+    starknetRs: `use std::sync::Arc;
+
+use starknet::{
+  core::types::{
+    contract::SierraClass, FieldElement,
+    BroadcastedDeclareTransaction, BroadcastedInvokeTransactionV2, BroadcastedDeclareTransactionV3,
+    DataAvailabilityMode, ResourceBoundsMapping, ResourceBounds
+  },
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+        
+#[tokio::main]
+async fn main() {
+  // Sierra class artifact. Output of the "starknet-compile" command
+  let contract_artifact: SierraClass =
+    serde_json::from_reader(std::fs::File::open("/path/to/contract/artifact.json").unwrap())
+    .unwrap();
+  // Class hash of the compiled CASM class from the "starknet-sierra-compile" command
+  let compiled_class_hash =
+    FieldElement::from_hex_be("COMPILED_CASM_CLASS_HASH_IN_HEX_HERE").unwrap();
+  // We need to flatten the ABI into a string first
+  let flattened_class = contract_artifact.flatten().unwrap();
+
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+        
+  let result = provider
+    .add_declare_transaction(
+      BroadcastedDeclareTransaction::V2(
+        BroadcastedDeclareTransactionV2 {
+          sender_address: felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),
+          compiled_class_hash,
+          max_fee: felt!("0x0"),
+          signature: vec![
+            felt!("0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98"),
+            felt!("0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af")
+          ],
+          nonce: felt!("0x0"),
+          contract_class: Arc::new(flattened_class),
+          is_query: false
+        }
+      )
+    )
+    .await;
+  match result {
+    Ok(declare_transaction_result) => {
+      println!("{declare_transaction_result:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
+  },
   // Submit a new deploy account transaction
   {
     name: "starknet_addDeployAccountTransaction",
@@ -861,6 +922,7 @@ async fn main() {
     starknetRs: `use starknet::{
   core::types::{
     BroadcastedDeployAccountTransaction, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
+    DataAvailabilityMode, ResourceBoundsMapping, ResourceBounds
   },
   macros::felt,
   providers::{
@@ -1086,7 +1148,3 @@ async fn main() {
 ];
 
 export const Methods = [...ReadMethods, ...TraceMethods, ...WriteMethods];
-export const comingSoon = [
-  "starknet_addDeclareTransaction",
-  "starknet_addDeployAccountTransaction",
-];
