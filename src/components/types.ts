@@ -4,8 +4,9 @@ export enum Chain {
   Sepolia,
 }
 
-export type BroadcastInvokeTransactionV1 = {
-  type: "INVOKE_V1";
+export type BroadcastedInvokeTransactionV1 = {
+  type: "INVOKE";
+  version: "0x1";
   sender_address: string;
   calldata: string[];
   max_fee: string;
@@ -13,8 +14,9 @@ export type BroadcastInvokeTransactionV1 = {
   nonce: string;
 };
 
-export type BroadcastInvokeTransactionV3 = {
-  type: "INVOKE_V3";
+export type BroadcastedInvokeTransactionV3 = {
+  type: "INVOKE";
+  version: "0x3";
   sender_address: string;
   calldata: string[];
   signature: string[];
@@ -30,16 +32,18 @@ export type BroadcastInvokeTransactionV3 = {
   fee_data_availability_mode: string;
 };
 
-export type BroadcastDeclareTransactionV2 = {
-  type: "DECLARE_V2";
+export type BroadcastedDeclareTransactionV2 = {
+  type: "DECLARE";
+  version: "0x2";
   sender_address: string;
   max_fee: string;
   signature: string[];
   nonce: string;
 };
 
-export type BroadcastDeclareTransactionV3 = {
-  type: "DECLARE_V3";
+export type BroadcastedDeclareTransactionV3 = {
+  type: "DECLARE";
+  version: "0x3";
   sender_address: string;
   signature: string[];
   nonce: string;
@@ -54,8 +58,9 @@ export type BroadcastDeclareTransactionV3 = {
   fee_data_availability_mode: string;
 };
 
-export type BroadcastDeployAccountTransactionV1 = {
-  type: "DEPLOY_ACCOUNT_V1";
+export type BroadcastedDeployAccountTransactionV1 = {
+  type: "DEPLOY_ACCOUNT";
+  version: "0x1";
   max_fee: string;
   signature: string[];
   nonce: string;
@@ -64,8 +69,9 @@ export type BroadcastDeployAccountTransactionV1 = {
   class_hash: string;
 };
 
-export type BroadcastDeployAccountTransactionV3 = {
-  type: "DEPLOY_ACCOUNT_V3";
+export type BroadcastedDeployAccountTransactionV3 = {
+  type: "DEPLOY_ACCOUNT";
+  version: "0x3";
   signature: string[];
   nonce: string;
   contract_address_salt: string;
@@ -81,10 +87,10 @@ export type BroadcastDeployAccountTransactionV3 = {
   fee_data_availability_mode: string;
 };
 
-export type BroadcastTransaction =
-  | BroadcastInvokeTransactionV1
-  | BroadcastInvokeTransactionV3
-  | BroadcastDeclareTransactionV2
-  | BroadcastDeclareTransactionV3
-  | BroadcastDeployAccountTransactionV1
-  | BroadcastDeployAccountTransactionV3;
+export type BroadcastedTransaction =
+  | BroadcastedInvokeTransactionV1
+  | BroadcastedInvokeTransactionV3
+  | BroadcastedDeclareTransactionV2
+  | BroadcastedDeclareTransactionV3
+  | BroadcastedDeployAccountTransactionV1
+  | BroadcastedDeployAccountTransactionV3;
