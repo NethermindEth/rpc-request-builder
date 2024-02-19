@@ -6,6 +6,22 @@ const provider = new RpcProvider({
 })
 
 `;
+const STARKNET_GO_PREFIX = `package main
+import (
+  "context"
+  "fmt"
+  "log"
+  "github.com/NethermindEth/starknet.go/rpc"
+)
+    
+func main() {
+  rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
+  client, err := rpc.NewClient(rpcUrl)
+  if err != nil {
+    log.Fatal(err)
+  }
+  provider := rpc.NewProvider(client)
+`;
 
 const block_id = {
   placeholder: "latest",
@@ -551,7 +567,13 @@ const WriteMethods = [
       invoke_transaction: BROADCASTED_INVOKE_TXN,
     },
     starknetJs: ``,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+  response, err := provider.AddInvokeTransaction(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("Response:", response)
+}`,
     starknetRs: ``,
   },
 
@@ -571,7 +593,13 @@ const WriteMethods = [
       deploy_account_transaction: BROADCASTED_DEPLOY_ACCOUNT_TXN,
     },
     starknetJs: ``,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+  response, err := provider.AddDeployAccountTransaction(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("Response:", response)
+}`,
     starknetRs: ``,
   },
 ];
