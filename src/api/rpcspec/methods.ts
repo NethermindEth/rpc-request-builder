@@ -331,9 +331,7 @@ const ReadMethods = [
     `,
     starknetGo: ``,
     starknetRs: `${STARKNET_RS_PREFIX}let result = provider
-        .get_transaction_status(felt!(
-            "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"
-        ))
+        .get_transaction_status(felt!("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"))
         .await;
     match result {
         Ok(transaction_status) => {
@@ -359,9 +357,7 @@ const ReadMethods = [
     `,
     starknetGo: ``,
     starknetRs: `${STARKNET_RS_PREFIX}let result = provider
-          .get_transaction_status(felt!(
-              "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"
-          ))
+          .get_transaction_status(felt!("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"))
           .await;
       match result {
           Ok(transaction_status) => {
@@ -417,9 +413,7 @@ const ReadMethods = [
     `,
     starknetGo: ``,
     starknetRs: `${STARKNET_RS_PREFIX}let result = provider
-          .get_transaction_receipt(felt!(
-              "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"
-          ))
+          .get_transaction_receipt(felt!("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"))
           .await;
       match result {
           Ok(transaction_receipt) => {
@@ -653,7 +647,46 @@ const ReadMethods = [
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+      core::types::{BlockId, BlockTag, FieldElement,EventFilter},
+      macros::felt,
+      providers::{
+          jsonrpc::{HttpTransport, JsonRpcClient},
+          Provider, Url,
+      },
+  };
+  
+  #[tokio::main]
+  async fn main() {
+      let provider = JsonRpcClient::new(HttpTransport::new(
+          Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+  
+      let result = provider
+          .get_events(
+              EventFilter {
+                  from_block: Some(BlockId::Tag(BlockTag::Latest)),
+                  to_block: Some(BlockId::Tag(BlockTag::Latest)),
+                  address: Some(FieldElement::from_hex_be(
+                      "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
+                  ).unwrap()),
+                  keys : Some(vec![vec![FieldElement::from_hex_be(
+                      "0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e",
+                  ).unwrap(),],])
+              },
+              None,
+              2,
+          )
+          .await;
+      match result {
+          Ok(events_page) => {
+              println!("{:#?}", events_page);
+          }
+          Err(err) => {
+              eprintln!("Error: {}", err);
+          }
+      }
+  } `,
   },
 
   // Get the nonce associated with the given address in the given block
