@@ -4,6 +4,12 @@ export enum Chain {
   Sepolia,
 }
 
+export type FunctionCall = {
+  contract_address: string;
+  entry_point_selector: string;
+  calldata: string[];
+};
+
 export type BroadcastedInvokeTransactionV1 = {
   type: "INVOKE";
   version: "0x1";
@@ -12,6 +18,7 @@ export type BroadcastedInvokeTransactionV1 = {
   max_fee: string;
   signature: string[];
   nonce: string;
+  is_query: boolean;
 };
 
 export type BroadcastedInvokeTransactionV3 = {
@@ -30,6 +37,7 @@ export type BroadcastedInvokeTransactionV3 = {
   account_deployment_data: string[];
   nonce_data_availability_mode: string;
   fee_data_availability_mode: string;
+  is_query: boolean;
 };
 
 export type BroadcastedDeclareTransactionV2 = {
@@ -39,6 +47,7 @@ export type BroadcastedDeclareTransactionV2 = {
   max_fee: string;
   signature: string[];
   nonce: string;
+  is_query: boolean;
 };
 
 export type BroadcastedDeclareTransactionV3 = {
@@ -56,6 +65,7 @@ export type BroadcastedDeclareTransactionV3 = {
   account_deployment_data: string[];
   nonce_data_availability_mode: string;
   fee_data_availability_mode: string;
+  is_query: boolean;
 };
 
 export type BroadcastedDeployAccountTransactionV1 = {
@@ -67,6 +77,7 @@ export type BroadcastedDeployAccountTransactionV1 = {
   contract_address_salt: string;
   constructor_calldata: string[];
   class_hash: string;
+  is_query: boolean;
 };
 
 export type BroadcastedDeployAccountTransactionV3 = {
@@ -85,6 +96,7 @@ export type BroadcastedDeployAccountTransactionV3 = {
   paymaster_data: string[];
   nonce_data_availability_mode: string;
   fee_data_availability_mode: string;
+  is_query: boolean;
 };
 
 export type BroadcastedTransaction =
@@ -94,3 +106,10 @@ export type BroadcastedTransaction =
   | BroadcastedDeclareTransactionV3
   | BroadcastedDeployAccountTransactionV1
   | BroadcastedDeployAccountTransactionV3;
+
+export type MsgFromL1 = {
+  from_address: string;
+  to_address: string;
+  entry_point_selector: string;
+  payload: string[];
+};

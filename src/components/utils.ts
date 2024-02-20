@@ -1,4 +1,5 @@
 import {
+  FunctionCall,
   BroadcastedTransaction,
   BroadcastedInvokeTransactionV1,
   BroadcastedInvokeTransactionV3,
@@ -6,6 +7,7 @@ import {
   BroadcastedDeclareTransactionV3,
   BroadcastedDeployAccountTransactionV1,
   BroadcastedDeployAccountTransactionV3,
+  MsgFromL1,
 } from "./types";
 
 export const isUrlFromNethermindDomain = (url: string) => {
@@ -65,6 +67,16 @@ export const formatStarknetRsParamsBlockId = (
   return "INVALID_BLOCK_ID";
 };
 
+export const formatStarknetRsParamsFunctionCall = (
+  functionCall: FunctionCall
+) => `FunctionCall {
+        contract_address: felt!("${functionCall.contract_address}"),
+        entry_point_selector: felt!("${functionCall.entry_point_selector}"),
+        calldata: vec![${functionCall.calldata
+          .map((data) => `felt!("${data}")`)
+          .join(", ")}],
+      }`;
+
 const formatBroadcastedInvokeTransactionV1 = (
   transaction: BroadcastedInvokeTransactionV1
 ) => `BroadcastedInvokeTransaction::V1(
@@ -78,7 +90,7 @@ const formatBroadcastedInvokeTransactionV1 = (
               .map((sig) => `felt!("${sig}")`)
               .join(", ")}],
             nonce: felt!("${transaction.nonce}"),
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -121,7 +133,7 @@ const formatBroadcastedInvokeTransactionV3 = (
             fee_data_availability_mode: DataAvailabilityMode::${
               transaction.fee_data_availability_mode
             },
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -137,7 +149,7 @@ const formatBroadcastedDeclareTransactionV2 = (
               .join(", ")}],
             nonce: felt!("${transaction.nonce}"),
             contract_class: Arc::new(flattened_class),
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -179,7 +191,7 @@ const formatBroadcastedDeclareTransactionV3 = (
             fee_data_availability_mode: DataAvailabilityMode::${
               transaction.fee_data_availability_mode
             },
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -199,7 +211,7 @@ const formatBroadcastedDeployAccountTransactionV1 = (
               .map((data) => `felt!("${data}")`)
               .join(", ")}],
             class_hash: felt!("${transaction.class_hash}"),
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -242,7 +254,7 @@ const formatBroadcastedDeployAccountTransactionV3 = (
             fee_data_availability_mode: DataAvailabilityMode::${
               transaction.fee_data_availability_mode
             },
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -330,16 +342,21 @@ export const formatStarknetRsParamsTransactions = (
 };
 
 export const formatStarknetRsParamsSimulationFlags = (
-  simulationFlags: string[]
+  simulationFlags: string[],
+  estimateFee: boolean
 ) => {
   const simulationFlagsEnums = simulationFlags
     .map((simulationFlag) => {
       switch (simulationFlag) {
         case "SKIP_VALIDATE": {
-          return "SimulationFlag::SkipValidate";
+          return estimateFee
+            ? "SimulationFlagForEstimateFee::SkipValidate"
+            : "SimulationFlag::SkipValidate";
         }
         case "SKIP_FEE_CHARGE": {
-          return "SimulationFlag::SkipFeeCharge";
+          return estimateFee
+            ? "INVALID_SIMULATION_FLAG"
+            : "SimulationFlag::SkipFeeCharge";
         }
         default: {
           return "INVALID_SIMULATION_FLAG";
@@ -350,3 +367,14 @@ export const formatStarknetRsParamsSimulationFlags = (
   return `
       vec![${simulationFlagsEnums}]`;
 };
+
+export const formatStarknetRsParamsMsgFromL1 = (
+  msgFromL1: MsgFromL1
+) => `MsgFromL1 {
+      from_address: EthAddress::from_hex("${msgFromL1.from_address}").unwrap(),
+      to_address: felt!("${msgFromL1.to_address}"),
+      entry_point_selector: felt!("${msgFromL1.entry_point_selector}"),
+      payload: vec![${msgFromL1.payload
+        .map((data) => `felt!("${data}")`)
+        .join(", ")}],
+    }`;

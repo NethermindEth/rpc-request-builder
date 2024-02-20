@@ -22,11 +22,13 @@ import {
   extractRpcUrl,
   extractNodeUrl,
   formatStarknetRsParamsBlockId,
+  formatStarknetRsParamsFunctionCall,
   formatStarknetRsParamsInvokeTransaction,
   formatStarknetRsParamsDeclareTransaction,
   formatStarknetRsParamsDeployAccountTransaction,
   formatStarknetRsParamsTransactions,
   formatStarknetRsParamsSimulationFlags,
+  formatStarknetRsParamsMsgFromL1,
 } from "./utils";
 
 const formatName = (name: string) => {
@@ -355,16 +357,39 @@ const Builder = () => {
             ([key, value]) => {
               if (key === "block_id") {
                 return formatStarknetRsParamsBlockId(value);
+              } else if (key === "request") {
+                if (Array.isArray(value)) {
+                  return formatStarknetRsParamsTransactions(
+                    value.map((t: any) => ({ ...t, is_query: true }))
+                  );
+                }
+                return formatStarknetRsParamsFunctionCall(value);
+              } else if (key === "message") {
+                return formatStarknetRsParamsMsgFromL1(value);
               } else if (key === "invoke_transaction") {
-                return formatStarknetRsParamsInvokeTransaction(value);
+                return formatStarknetRsParamsInvokeTransaction({
+                  ...value,
+                  is_query: false,
+                });
               } else if (key === "declare_transaction") {
-                return formatStarknetRsParamsDeclareTransaction(value);
+                return formatStarknetRsParamsDeclareTransaction({
+                  ...value,
+                  is_query: false,
+                });
               } else if (key === "deploy_account_transaction") {
-                return formatStarknetRsParamsDeployAccountTransaction(value);
+                return formatStarknetRsParamsDeployAccountTransaction({
+                  ...value,
+                  is_query: false,
+                });
               } else if (key === "transactions") {
-                return formatStarknetRsParamsTransactions(value);
+                return formatStarknetRsParamsTransactions(
+                  value.map((t: any) => ({ ...t, is_query: true }))
+                );
               } else if (key === "simulation_flags") {
-                return formatStarknetRsParamsSimulationFlags(value);
+                return formatStarknetRsParamsSimulationFlags(
+                  value,
+                  methodName === "estimate_fee"
+                );
               } else if (typeof value === "object" && !Array.isArray(value)) {
                 // If value is an object, return its stringified values
                 return Object.values(value).map((val) => {
