@@ -860,7 +860,32 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider
+    .chain_id()
+    .await;
+  match result {
+    Ok(chain_id) => {
+      println!("{chain_id:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 
   // Returns an object about the sync status, or false if the node is not syncing
@@ -872,7 +897,31 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider
+    .syncing()
+    .await;
+  match result {
+    Ok(sync_status) => {
+      println!("{sync_status:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}`,
   },
 
   // Returns all events matching the given filter
@@ -920,7 +969,34 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  core::types::{BlockId, BlockTag},
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider
+    .get_nonce(BlockId::Tag(BlockTag::Latest), felt!("0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7"))
+    .await;
+  match result {
+    Ok(nonce) => {
+      println!("{nonce:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 ];
 
