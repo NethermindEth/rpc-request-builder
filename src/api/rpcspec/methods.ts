@@ -297,8 +297,8 @@ const ReadMethods = [
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag,MaybePendingStateUpdate},
       providers::{
-       jsonrpc::{HttpTransport, JsonRpcClient},
-       Provider, Url,
+        jsonrpc::{HttpTransport, JsonRpcClient},
+        Provider, Url,
       }, 
      };
   
@@ -341,8 +341,8 @@ const ReadMethods = [
       core::types::{BlockId,BlockTag},
       macros::felt,
       providers::{
-       jsonrpc::{HttpTransport, JsonRpcClient},
-       Provider, Url,
+        jsonrpc::{HttpTransport, JsonRpcClient},
+        Provider, Url,
     },
   };
   
