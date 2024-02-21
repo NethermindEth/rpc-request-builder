@@ -212,9 +212,8 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: `
-    use starknet::{
-      core::types::{BlockId, BlockTag,MaybePendingBlockWithTxHashes},
+    starknetRs: `use starknet::{
+      core::types::{BlockId, BlockTag},
       providers::{
           jsonrpc::{HttpTransport, JsonRpcClient},
           Provider, Url,
@@ -255,12 +254,11 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: `
-    use starknet::{
-      core::types::{BlockId, BlockTag,MaybePendingBlockWithTxs},
+    starknetRs: `use starknet::{
+      core::types::{BlockId, BlockTag},
       providers::{
-          jsonrpc::{HttpTransport, JsonRpcClient},
-          Provider, Url,
+        jsonrpc::{HttpTransport, JsonRpcClient},
+        Provider, Url,
       },
   };
   
@@ -296,12 +294,11 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: `
-      use starknet::{
+    starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag,MaybePendingStateUpdate},
       providers::{
-      jsonrpc::{HttpTransport, JsonRpcClient},
-      Provider, Url,
+       jsonrpc::{HttpTransport, JsonRpcClient},
+       Provider, Url,
       }, 
      };
   
@@ -340,13 +337,13 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: `
-    use starknet::{
-      core::types::FieldElement,
+    starknetRs: `use starknet::{
+      core::types::{BlockId,BlockTag},
+      macros::felt,
       providers::{
-      jsonrpc::{HttpTransport, JsonRpcClient},
-      Provider, Url,
-  },
+       jsonrpc::{HttpTransport, JsonRpcClient},
+       Provider, Url,
+    },
   };
   
   #[tokio::main]
@@ -562,8 +559,7 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: `
-    use starknet::providers::{
+    starknetRs: `use starknet::providers::{
       jsonrpc::{HttpTransport, JsonRpcClient},
       Provider, Url,
     };
@@ -597,13 +593,9 @@ const ReadMethods = [
     });
     `,
     starknetGo: ``,
-    starknetRs: `
-    use starknet::{
-    core::types::{BlockHashAndNumber}
-    providers::{
+    starknetRs: `use starknet::providers::{
       jsonrpc::{HttpTransport, JsonRpcClient},
       Provider, Url,
-      },
     };
   
   #[tokio::main]
