@@ -21,6 +21,7 @@ import {
   isUrlFromNethermindDomain,
   extractRpcUrl,
   extractNodeUrl,
+  formatRawParams,
   formatStarknetRsParamsBlockId,
   formatStarknetRsParamsInvokeTransaction,
   formatStarknetRsParamsDeclareTransaction,
@@ -353,13 +354,24 @@ const Builder = () => {
               if (key === "block_id") {
                 return formatStarknetRsParamsBlockId(value);
               } else if (key === "invoke_transaction") {
-                return formatStarknetRsParamsInvokeTransaction(value);
+                return formatStarknetRsParamsInvokeTransaction({
+                  ...value,
+                  is_query: false,
+                });
               } else if (key === "declare_transaction") {
-                return formatStarknetRsParamsDeclareTransaction(value);
+                return formatStarknetRsParamsDeclareTransaction({
+                  ...value,
+                  is_query: false,
+                });
               } else if (key === "deploy_account_transaction") {
-                return formatStarknetRsParamsDeployAccountTransaction(value);
+                return formatStarknetRsParamsDeployAccountTransaction({
+                  ...value,
+                  is_query: false,
+                });
               } else if (key === "transactions") {
-                return formatStarknetRsParamsTransactions(value);
+                return formatStarknetRsParamsTransactions(
+                  value.map((t: any) => ({ ...t, is_query: true }))
+                );
               } else if (key === "simulation_flags") {
                 return formatStarknetRsParamsSimulationFlags(value);
               } else if (typeof value === "object" && !Array.isArray(value)) {
@@ -399,7 +411,7 @@ const Builder = () => {
       const jsonObject = {
         jsonrpc: "2.0",
         method: methodName,
-        params,
+        params: formatRawParams(params),
         id: 1,
       };
       const jsonDataString = JSON.stringify(jsonObject, null, 4);
