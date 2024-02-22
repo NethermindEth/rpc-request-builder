@@ -350,7 +350,6 @@ const Builder = () => {
               if (key === "block_id") {
                 return formatStarknetRsParamsBlockId(value);
               } else if (key === "transactions") {
-                console.log(value.map((t: any) => ({ ...t, is_query: true })));
                 return formatStarknetRsParamsTransactions(
                   value.map((t: any) => ({ ...t, is_query: true }))
                 );
