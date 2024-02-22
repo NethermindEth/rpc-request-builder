@@ -21,6 +21,7 @@ import {
   isUrlFromNethermindDomain,
   extractRpcUrl,
   extractNodeUrl,
+  formatRawParams,
   formatStarknetRsParamsBlockId,
   formatStarknetRsParamsTransactions,
   formatStarknetRsParamsSimulationFlags,
@@ -389,7 +390,7 @@ const Builder = () => {
       const jsonObject = {
         jsonrpc: "2.0",
         method: methodName,
-        params,
+        params: formatRawParams(params),
         id: 1,
       };
       const jsonDataString = JSON.stringify(jsonObject, null, 4);

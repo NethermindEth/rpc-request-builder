@@ -24,7 +24,6 @@ const block_id = {
   ],
 };
 
-
 const contract_address = {
   placeholder:
     "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
@@ -93,27 +92,27 @@ const nonce = {
 };
 
 const resource_bounds_l1_gas_max_amount = {
-  placeholder: 0,
+  placeholder: "0x0",
   description: "The max amount of L1 gas used in this tx",
 };
 
 const resource_bounds_l1_gas_max_price_per_unit = {
-  placeholder: 0,
+  placeholder: "0x0",
   description: "The max price per unit of L1 gas used in this tx",
 };
 
 const resource_bounds_l2_gas_max_amount = {
-  placeholder: 0,
+  placeholder: "0x0",
   description: "The max amount of L2 gas used in this tx",
 };
 
 const resource_bounds_l2_gas_max_price_per_unit = {
-  placeholder: 0,
+  placeholder: "0x0",
   description: "The max price per unit of L2 gas used in this tx",
 };
 
 const tip = {
-  placeholder: 0,
+  placeholder: "0x0",
   description: "The tip for the transaction",
 };
 
@@ -317,7 +316,6 @@ const DEPLOY_ACCOUNT_TXN_V1 = {
 };
 
 const BROADCASTED_DEPLOY_ACCOUNT_TXN = DEPLOY_ACCOUNT_TXN_V1;
-
 
 const ReadMethods = [
   // Returns the version of the Starknet JSON-RPC specification being used
@@ -755,22 +753,41 @@ async fn main() {
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: ``,
-    // starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-    // const { RpcProvider } = require('starknet');
+    starknetRs: `use starknet::{
+  core::types::{FunctionCall, BlockId, BlockTag},
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
 
-    // const provider = new RpcProvider({
-    //     nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-    // })
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
 
-    // provider.callContract({
-    //   contractAddress: "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
-    //   entrypoint: 'name',
-    //   calldata: [],
-    // }).then(response => {
-    //     console.log(response);
-    // });
-    // `,
+  let result = provider
+    .call(
+      FunctionCall {
+        contract_address: felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),
+        entry_point_selector: felt!("0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"),
+        calldata: vec![],
+      },
+      BlockId::Tag(BlockTag::Latest),
+    )
+    .await;
+  match result {
+    Ok(call_result) => {
+      println!("{call_result:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 
   // Estimate the fee for StarkNet transactions
@@ -1129,7 +1146,7 @@ async fn main() {
                 felt!("0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af")
               ],
               nonce: felt!("0x0"),
-              is_query: false
+              is_query: true
             }
           )
         )
@@ -1151,7 +1168,6 @@ async fn main() {
 `,
   },
 ];
-
 
 export const Methods = [...ReadMethods, ...TraceMethods, ...WriteMethods];
 export const comingSoon = [
