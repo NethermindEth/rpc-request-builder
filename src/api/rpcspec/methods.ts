@@ -114,27 +114,27 @@ const nonce = {
 };
 
 const resource_bounds_l1_gas_max_amount = {
-  placeholder: 0,
+  placeholder: "0x0",
   description: "The max amount of L1 gas used in this tx",
 };
 
 const resource_bounds_l1_gas_max_price_per_unit = {
-  placeholder: 0,
+  placeholder: "0x0",
   description: "The max price per unit of L1 gas used in this tx",
 };
 
 const resource_bounds_l2_gas_max_amount = {
-  placeholder: 0,
+  placeholder: "0x0",
   description: "The max amount of L2 gas used in this tx",
 };
 
 const resource_bounds_l2_gas_max_price_per_unit = {
-  placeholder: 0,
+  placeholder: "0x0",
   description: "The max price per unit of L2 gas used in this tx",
 };
 
 const tip = {
-  placeholder: 0,
+  placeholder: "0x0",
   description: "The tip for the transaction",
 };
 
@@ -780,21 +780,6 @@ async fn main() {
   }
 }
 `,
-    // starknetJs: `// Installation Instructions: https://https://www.starknetjs.com/
-    // const { RpcProvider } = require('starknet');
-
-    // const provider = new RpcProvider({
-    //     nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/"
-    // })
-
-    // provider.callContract({
-    //   contractAddress: "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
-    //   entrypoint: 'name',
-    //   calldata: [],
-    // }).then(response => {
-    //     console.log(response);
-    // });
-    // `,
   },
 
   // Estimate the fee for StarkNet transactions
