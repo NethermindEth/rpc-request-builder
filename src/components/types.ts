@@ -4,16 +4,17 @@ export enum Chain {
   Sepolia,
 }
 
-export type BroadcastInvokeTransactionV1 = {
+export type BroadcastedInvokeTransactionV1 = {
   type: "INVOKE_V1";
   sender_address: string;
   calldata: string[];
   max_fee: string;
   signature: string[];
   nonce: string;
+  is_query: boolean;
 };
 
-export type BroadcastInvokeTransactionV3 = {
+export type BroadcastedInvokeTransactionV3 = {
   type: "INVOKE_V3";
   sender_address: string;
   calldata: string[];
@@ -28,17 +29,19 @@ export type BroadcastInvokeTransactionV3 = {
   account_deployment_data: string[];
   nonce_data_availability_mode: string;
   fee_data_availability_mode: string;
+  is_query: boolean;
 };
 
-export type BroadcastDeclareTransactionV2 = {
+export type BroadcastedDeclareTransactionV2 = {
   type: "DECLARE_V2";
   sender_address: string;
   max_fee: string;
   signature: string[];
   nonce: string;
+  is_query: boolean;
 };
 
-export type BroadcastDeclareTransactionV3 = {
+export type BroadcastedDeclareTransactionV3 = {
   type: "DECLARE_V3";
   sender_address: string;
   signature: string[];
@@ -52,9 +55,10 @@ export type BroadcastDeclareTransactionV3 = {
   account_deployment_data: string[];
   nonce_data_availability_mode: string;
   fee_data_availability_mode: string;
+  is_query: boolean;
 };
 
-export type BroadcastDeployAccountTransactionV1 = {
+export type BroadcastedDeployAccountTransactionV1 = {
   type: "DEPLOY_ACCOUNT_V1";
   max_fee: string;
   signature: string[];
@@ -62,9 +66,10 @@ export type BroadcastDeployAccountTransactionV1 = {
   contract_address_salt: string;
   constructor_calldata: string[];
   class_hash: string;
+  is_query: boolean;
 };
 
-export type BroadcastDeployAccountTransactionV3 = {
+export type BroadcastedDeployAccountTransactionV3 = {
   type: "DEPLOY_ACCOUNT_V3";
   signature: string[];
   nonce: string;
@@ -79,12 +84,13 @@ export type BroadcastDeployAccountTransactionV3 = {
   paymaster_data: string[];
   nonce_data_availability_mode: string;
   fee_data_availability_mode: string;
+  is_query: boolean;
 };
 
-export type BroadcastTransaction =
-  | BroadcastInvokeTransactionV1
-  | BroadcastInvokeTransactionV3
-  | BroadcastDeclareTransactionV2
-  | BroadcastDeclareTransactionV3
-  | BroadcastDeployAccountTransactionV1
-  | BroadcastDeployAccountTransactionV3;
+export type BroadcastedTransaction =
+  | BroadcastedInvokeTransactionV1
+  | BroadcastedInvokeTransactionV3
+  | BroadcastedDeclareTransactionV2
+  | BroadcastedDeclareTransactionV3
+  | BroadcastedDeployAccountTransactionV1
+  | BroadcastedDeployAccountTransactionV3;

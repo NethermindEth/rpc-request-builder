@@ -350,7 +350,10 @@ const Builder = () => {
               if (key === "block_id") {
                 return formatStarknetRsParamsBlockId(value);
               } else if (key === "transactions") {
-                return formatStarknetRsParamsTransactions(value);
+                console.log(value.map((t: any) => ({ ...t, is_query: true })));
+                return formatStarknetRsParamsTransactions(
+                  value.map((t: any) => ({ ...t, is_query: true }))
+                );
               } else if (key === "simulation_flags") {
                 return formatStarknetRsParamsSimulationFlags(value);
               } else if (typeof value === "object" && !Array.isArray(value)) {
