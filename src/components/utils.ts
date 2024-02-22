@@ -50,6 +50,50 @@ export const extractNodeUrl = (starknetJsCode: string) => {
 export const capitalize = (str: string) =>
   `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
 
+const formatRawTransaction = (rawTransaction: any) => {
+  const formattedTransaction = { ...rawTransaction };
+  if (rawTransaction.resource_bounds_l1_gas_max_amount) {
+    formattedTransaction.resource_bounds = {
+      l1_gas: {
+        max_amount: rawTransaction.resource_bounds_l1_gas_max_amount,
+        max_price_per_unit:
+          rawTransaction.resource_bounds_l1_gas_max_price_per_unit,
+      },
+      l2_gas: {
+        max_amount: rawTransaction.resource_bounds_l2_gas_max_amount,
+        max_price_per_unit:
+          rawTransaction.resource_bounds_l2_gas_max_price_per_unit,
+      },
+    };
+    delete formattedTransaction.resource_bounds_l1_gas_max_amount;
+    delete formattedTransaction.resource_bounds_l1_gas_max_price_per_unit;
+    delete formattedTransaction.resource_bounds_l2_gas_max_amount;
+    delete formattedTransaction.resource_bounds_l2_gas_max_price_per_unit;
+  }
+  return formattedTransaction;
+};
+
+export const formatRawParams = (params: any) => {
+  const formattedRawParams = structuredClone(params);
+  for (let prop of [
+    "request",
+    "invoke_transaction",
+    "declare_transaction",
+    "deploy_account_transaction",
+    "transactions",
+  ]) {
+    if (formattedRawParams[prop] === undefined) {
+      continue;
+    } else if (Array.isArray(formattedRawParams[prop])) {
+      formattedRawParams[prop] =
+        formattedRawParams[prop].map(formatRawTransaction);
+    } else {
+      formattedRawParams[prop] = formatRawTransaction(formattedRawParams[prop]);
+    }
+  }
+  return formattedRawParams;
+};
+
 export const formatStarknetRsParamsBlockId = (
   blockId: string | { block_hash?: string; block_number?: number }
 ) => {
@@ -65,6 +109,40 @@ export const formatStarknetRsParamsBlockId = (
   return "INVALID_BLOCK_ID";
 };
 
+const formatStarknetRsParamsUint = (uint: string, size: string) =>
+  `${size}::from_str_radix("${uint}".trim_start_matches("0x"), 16).unwrap()`;
+
+const formatResourceBounds = ({
+  resource_bounds_l1_gas_max_amount,
+  resource_bounds_l1_gas_max_price_per_unit,
+  resource_bounds_l2_gas_max_amount,
+  resource_bounds_l2_gas_max_price_per_unit,
+}:
+  | BroadcastedInvokeTransactionV3
+  | BroadcastedDeclareTransactionV3
+  | BroadcastedDeployAccountTransactionV3) => `ResourceBoundsMapping {
+              l1_gas: ResourceBounds {
+                max_amount: ${formatStarknetRsParamsUint(
+                  resource_bounds_l1_gas_max_amount,
+                  "u64"
+                )},
+                max_price_per_unit: ${formatStarknetRsParamsUint(
+                  resource_bounds_l1_gas_max_price_per_unit,
+                  "u128"
+                )}
+              },
+              l2_gas: ResourceBounds {
+                max_amount: ${formatStarknetRsParamsUint(
+                  resource_bounds_l2_gas_max_amount,
+                  "u64"
+                )},
+                max_price_per_unit: ${formatStarknetRsParamsUint(
+                  resource_bounds_l2_gas_max_price_per_unit,
+                  "u128"
+                )}
+              }
+            }`;
+
 const formatBroadcastedInvokeTransactionV1 = (
   transaction: BroadcastedInvokeTransactionV1
 ) => `BroadcastedInvokeTransaction::V1(
@@ -78,7 +156,7 @@ const formatBroadcastedInvokeTransactionV1 = (
               .map((sig) => `felt!("${sig}")`)
               .join(", ")}],
             nonce: felt!("${transaction.nonce}"),
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -94,21 +172,8 @@ const formatBroadcastedInvokeTransactionV3 = (
               .map((sig) => `felt!("${sig}")`)
               .join(", ")}],
             nonce: felt!("${transaction.nonce}"),
-            resource_bounds: ResourceBoundsMapping {
-              l1_gas: ResourceBounds {
-                max_amount: ${transaction.resource_bounds_l1_gas_max_amount},
-                max_price_per_unit: ${
-                  transaction.resource_bounds_l1_gas_max_price_per_unit
-                }
-              },
-              l2_gas: ResourceBounds {
-                max_amount: ${transaction.resource_bounds_l2_gas_max_amount},
-                max_price_per_unit: ${
-                  transaction.resource_bounds_l2_gas_max_price_per_unit
-                }
-              }
-            },
-            tip: ${transaction.tip},
+            resource_bounds: ${formatResourceBounds(transaction)},
+            tip: ${formatStarknetRsParamsUint(transaction.tip, "u64")},
             paymaster_data: vec![${transaction.paymaster_data
               .map((data) => `felt!("${data}")`)
               .join(", ")}],
@@ -121,7 +186,7 @@ const formatBroadcastedInvokeTransactionV3 = (
             fee_data_availability_mode: DataAvailabilityMode::${
               transaction.fee_data_availability_mode
             },
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -137,7 +202,7 @@ const formatBroadcastedDeclareTransactionV2 = (
               .join(", ")}],
             nonce: felt!("${transaction.nonce}"),
             contract_class: Arc::new(flattened_class),
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -152,20 +217,9 @@ const formatBroadcastedDeclareTransactionV3 = (
               .join(", ")}],
             nonce: felt!("${transaction.nonce}"),
             contract_class: Arc::new(flattened_class),
-            resource_bounds: ResourceBoundsMapping {
-              l1_gas: ResourceBounds {
-                max_amount: ${transaction.resource_bounds_l1_gas_max_amount},
-                max_price_per_unit: ${
-                  transaction.resource_bounds_l1_gas_max_price_per_unit
-                }
-              },
-              l2_gas: ResourceBounds {
-                max_amount: ${transaction.resource_bounds_l2_gas_max_amount},
-                max_price_per_unit: ${
-                  transaction.resource_bounds_l2_gas_max_price_per_unit
-                }
-              }
-            },
+            resource_bounds: resource_bounds: ${formatResourceBounds(
+              transaction
+            )},
             tip: ${transaction.tip},
             paymaster_data: vec![${transaction.paymaster_data
               .map((data) => `felt!("${data}")`)
@@ -179,7 +233,7 @@ const formatBroadcastedDeclareTransactionV3 = (
             fee_data_availability_mode: DataAvailabilityMode::${
               transaction.fee_data_availability_mode
             },
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -199,7 +253,7 @@ const formatBroadcastedDeployAccountTransactionV1 = (
               .map((data) => `felt!("${data}")`)
               .join(", ")}],
             class_hash: felt!("${transaction.class_hash}"),
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 
@@ -218,20 +272,9 @@ const formatBroadcastedDeployAccountTransactionV3 = (
               .map((data) => `felt!("${data}")`)
               .join(", ")}],
             class_hash: felt!("${transaction.class_hash}"),
-            resource_bounds: ResourceBoundsMapping {
-              l1_gas: ResourceBounds {
-                max_amount: ${transaction.resource_bounds_l1_gas_max_amount},
-                max_price_per_unit: ${
-                  transaction.resource_bounds_l1_gas_max_price_per_unit
-                }
-              },
-              l2_gas: ResourceBounds {
-                max_amount: ${transaction.resource_bounds_l2_gas_max_amount},
-                max_price_per_unit: ${
-                  transaction.resource_bounds_l2_gas_max_price_per_unit
-                }
-              }
-            },
+            resource_bounds: resource_bounds: ${formatResourceBounds(
+              transaction
+            )},
             tip: ${transaction.tip},
             paymaster_data: vec![${transaction.paymaster_data
               .map((data) => `felt!("${data}")`)
@@ -242,7 +285,7 @@ const formatBroadcastedDeployAccountTransactionV3 = (
             fee_data_availability_mode: DataAvailabilityMode::${
               transaction.fee_data_availability_mode
             },
-            is_query: false
+            is_query: ${transaction.is_query}
           }
         )`;
 

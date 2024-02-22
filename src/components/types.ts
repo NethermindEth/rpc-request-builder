@@ -12,6 +12,7 @@ export type BroadcastedInvokeTransactionV1 = {
   max_fee: string;
   signature: string[];
   nonce: string;
+  is_query: boolean;
 };
 
 export type BroadcastedInvokeTransactionV3 = {
@@ -21,15 +22,16 @@ export type BroadcastedInvokeTransactionV3 = {
   calldata: string[];
   signature: string[];
   nonce: string;
-  resource_bounds_l1_gas_max_amount: number;
-  resource_bounds_l1_gas_max_price_per_unit: number;
-  resource_bounds_l2_gas_max_amount: number;
-  resource_bounds_l2_gas_max_price_per_unit: number;
-  tip: number;
+  resource_bounds_l1_gas_max_amount: string;
+  resource_bounds_l1_gas_max_price_per_unit: string;
+  resource_bounds_l2_gas_max_amount: string;
+  resource_bounds_l2_gas_max_price_per_unit: string;
+  tip: string;
   paymaster_data: string[];
   account_deployment_data: string[];
   nonce_data_availability_mode: string;
   fee_data_availability_mode: string;
+  is_query: boolean;
 };
 
 export type BroadcastedDeclareTransactionV2 = {
@@ -39,6 +41,7 @@ export type BroadcastedDeclareTransactionV2 = {
   max_fee: string;
   signature: string[];
   nonce: string;
+  is_query: boolean;
 };
 
 export type BroadcastedDeclareTransactionV3 = {
@@ -47,15 +50,16 @@ export type BroadcastedDeclareTransactionV3 = {
   sender_address: string;
   signature: string[];
   nonce: string;
-  resource_bounds_l1_gas_max_amount: number;
-  resource_bounds_l1_gas_max_price_per_unit: number;
-  resource_bounds_l2_gas_max_amount: number;
-  resource_bounds_l2_gas_max_price_per_unit: number;
-  tip: number;
+  resource_bounds_l1_gas_max_amount: string;
+  resource_bounds_l1_gas_max_price_per_unit: string;
+  resource_bounds_l2_gas_max_amount: string;
+  resource_bounds_l2_gas_max_price_per_unit: string;
+  tip: string;
   paymaster_data: string[];
   account_deployment_data: string[];
   nonce_data_availability_mode: string;
   fee_data_availability_mode: string;
+  is_query: boolean;
 };
 
 export type BroadcastedDeployAccountTransactionV1 = {
@@ -67,6 +71,7 @@ export type BroadcastedDeployAccountTransactionV1 = {
   contract_address_salt: string;
   constructor_calldata: string[];
   class_hash: string;
+  is_query: boolean;
 };
 
 export type BroadcastedDeployAccountTransactionV3 = {
@@ -77,14 +82,15 @@ export type BroadcastedDeployAccountTransactionV3 = {
   contract_address_salt: string;
   constructor_calldata: string[];
   class_hash: string;
-  resource_bounds_l1_gas_max_amount: number;
-  resource_bounds_l1_gas_max_price_per_unit: number;
-  resource_bounds_l2_gas_max_amount: number;
-  resource_bounds_l2_gas_max_price_per_unit: number;
-  tip: number;
+  resource_bounds_l1_gas_max_amount: string;
+  resource_bounds_l1_gas_max_price_per_unit: string;
+  resource_bounds_l2_gas_max_amount: string;
+  resource_bounds_l2_gas_max_price_per_unit: string;
+  tip: string;
   paymaster_data: string[];
   nonce_data_availability_mode: string;
   fee_data_availability_mode: string;
+  is_query: boolean;
 };
 
 export type BroadcastedTransaction =
