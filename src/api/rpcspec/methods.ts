@@ -411,7 +411,7 @@ const ReadMethods = [
       log.Fatal(err)
     }
     
-    fmt.Println("ClassOutput : ", result)
+    fmt.Println("ClassOutput: ", result)
   }`,
     starknetRs: ``,
   },
