@@ -385,7 +385,7 @@ const ReadMethods = [
       log.Fatal(err)
     }
     
-    fmt.Println("ClassHash is :", result)
+    fmt.Println("ClassHash:", result)
   }`,
     starknetRs: ``,
   },
