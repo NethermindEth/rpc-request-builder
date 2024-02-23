@@ -39,3 +39,9 @@ export const extractNodeUrl = (starknetJsCode: string) => {
 
 export const capitalize = (str: string) =>
   `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+
+export const toCamelCase = (str: string) => {
+  return str.replace(/_([a-z])/g, function (match, letter) {
+    return letter.toUpperCase();
+  });
+};

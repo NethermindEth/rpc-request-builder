@@ -24,7 +24,6 @@ const block_id = {
   ],
 };
 
-
 const contract_address = {
   placeholder:
     "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
@@ -162,7 +161,6 @@ const DEPLOY_ACCOUNT_TXN_V1 = {
 
 const BROADCASTED_DEPLOY_ACCOUNT_TXN = DEPLOY_ACCOUNT_TXN_V1;
 
-
 const ReadMethods = [
   // Returns the version of the Starknet JSON-RPC specification being used
   {
@@ -174,37 +172,37 @@ const ReadMethods = [
     `,
     starknetGo: `package main
 
-    import (
-      "context"
-      "fmt"
-      "log"
-    
-      "github.com/NethermindEth/starknet.go/rpc"
-    )
-    
-    func main() {
-      rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
-    
-      client, err := rpc.NewClient(rpcUrl)
-      if err != nil {
-        log.Fatal(err)
-      }
-    
-      provider := rpc.NewProvider(client)
-      specVersion, err := provider.SpecVersion(context.Background())
-      if err != nil {
-        log.Fatal(err)
-      }
-    
-      fmt.Println("SpecVersion:", specVersion)
-    }`,
+import (
+  "context"
+  "fmt"
+  "log"
+
+  "github.com/NethermindEth/starknet.go/rpc"
+)
+
+func main() {
+  rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
+
+  client, err := rpc.NewClient(rpcUrl)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  provider := rpc.NewProvider(client)
+  specVersion, err := provider.SpecVersion(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  fmt.Println("SpecVersion:", specVersion)
+}`,
     starknetRs: `use starknet::{
   providers::{
     jsonrpc::{HttpTransport, JsonRpcClient},
     Provider, Url,
   },
 };
-    
+
 #[tokio::main]
 async fn main() {
   let provider = JsonRpcClient::new(HttpTransport::new(
@@ -876,7 +874,6 @@ const TraceMethods = [
     starknetRs: ``,
   },
 ];
-
 
 export const Methods = [...ReadMethods, ...TraceMethods, ...WriteMethods];
 export const comingSoon = [
