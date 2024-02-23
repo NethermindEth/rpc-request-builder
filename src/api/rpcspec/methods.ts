@@ -189,30 +189,30 @@ const ReadMethods = [
     `,
     starknetGo: `package main
 
-    import (
-      "context"
-      "fmt"
-      "log"
-    
-      "github.com/NethermindEth/starknet.go/rpc"
-    )
-    
-    func main() {
-      rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
-    
-      client, err := rpc.NewClient(rpcUrl)
-      if err != nil {
-        log.Fatal(err)
-      }
-    
-      provider := rpc.NewProvider(client)
-      specVersion, err := provider.SpecVersion(context.Background())
-      if err != nil {
-        log.Fatal(err)
-      }
-    
-      fmt.Println("SpecVersion:", specVersion)
-    }`,
+import (
+  "context"
+  "fmt"
+  "log"
+
+  "github.com/NethermindEth/starknet.go/rpc"
+)
+
+func main() {
+  rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
+
+  client, err := rpc.NewClient(rpcUrl)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  provider := rpc.NewProvider(client)
+  specVersion, err := provider.SpecVersion(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  fmt.Println("SpecVersion:", specVersion)
+}`,
     starknetRs: ``,
   },
 
@@ -227,7 +227,35 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+      core::types::{BlockId, BlockTag},
+      providers::{
+          jsonrpc::{HttpTransport, JsonRpcClient},
+          Provider, Url,
+      },
+  };
+  
+ 
+  #[tokio::main]
+  async fn main() {
+      
+      let provider = JsonRpcClient::new(HttpTransport::new(
+          Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+      
+      let result = provider.get_block_with_tx_hashes(BlockId::Tag(BlockTag::Latest)).await;
+
+      match result {
+          Ok(block) => {
+              println!("{block:#?}");
+          }
+          Err(err) => {
+              eprintln!("Error: {err}");
+          }
+      }
+      
+  }
+  `,
   },
 
   // Get block information with full transactions given the block id
@@ -241,7 +269,33 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+      core::types::{BlockId, BlockTag},
+      providers::{
+        jsonrpc::{HttpTransport, JsonRpcClient},
+        Provider, Url,
+      },
+  };
+  
+  #[tokio::main]
+  async fn main() {
+      let provider = JsonRpcClient::new(HttpTransport::new(
+          Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+  
+      let result = provider.get_block_with_txs(BlockId::Tag(BlockTag::Latest)).await;
+      
+      match result {
+          Ok(block) => {
+              println!("{block:#?}");
+          }
+          Err(err) => {
+              eprintln!("Error: {err}");
+          }
+      
+      }
+  }
+  `,
   },
 
   // Get the information about the result of executing the requested block
@@ -255,7 +309,30 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+      core::types::{BlockId, BlockTag,MaybePendingStateUpdate},
+      providers::{
+        jsonrpc::{HttpTransport, JsonRpcClient},
+        Provider, Url,
+      }, 
+     };
+  
+  #[tokio::main]
+  async fn main() {
+      let provider = JsonRpcClient::new(HttpTransport::new(
+          Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+  
+      let result = provider.get_state_update(BlockId::Tag(BlockTag::Latest)).await;
+      match result {
+          Ok(state_update) => {
+              println!("{state_update:#?}");
+          }
+          Err(err) => {
+              eprintln!("Error: {err}");
+          }
+      }
+    }`,
   },
 
   // Get the value of the storage at the given address and key
@@ -275,7 +352,32 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+      core::types::{BlockId,BlockTag},
+      macros::felt,
+      providers::{
+        jsonrpc::{HttpTransport, JsonRpcClient},
+        Provider, Url,
+    },
+  };
+  
+  #[tokio::main]
+  async fn main() {
+      let provider = JsonRpcClient::new(HttpTransport::new(
+          Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+  
+      let result = provider.get_storage_at(felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),felt!("0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e"),BlockId::Tag(BlockTag::Latest)).await;
+      match result {
+          Ok(storage) => {
+              println!("{storage:#?}");
+          }
+          Err(err) => {
+              eprintln!("Error: {err}");
+          }
+      }
+  }
+    `,
   },
 
   // Gets the transaction status (possibly reflecting that the tx is still in the mempool, or dropped from it)
@@ -472,7 +574,29 @@ const ReadMethods = [
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::providers::{
+      jsonrpc::{HttpTransport, JsonRpcClient},
+      Provider, Url,
+    };
+  
+   #[tokio::main]
+   async fn main() {
+      let provider = JsonRpcClient::new(HttpTransport::new(
+          Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+  
+      let result = provider.block_number().await;
+      
+      match result {
+          Ok(block_number) => {
+              println!("{block_number:#?}");
+          }
+          Err(err) => {
+              eprintln!("Error: {err}");
+          }
+      }
+   }
+    `,
   },
 
   // Get the most recent accepted block hash and number
@@ -481,10 +605,32 @@ const ReadMethods = [
     params: [],
     starknetJs: `${STARKNET_JS_PREFIX}provider.getBlockLatestAccepted().then(blockHashAndNumber => {
     console.log(blockHashAndNumber);
-});
+    });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::providers::{
+      jsonrpc::{HttpTransport, JsonRpcClient},
+      Provider, Url,
+    };
+  
+  #[tokio::main]
+  async fn main() {
+      let provider = JsonRpcClient::new(HttpTransport::new(
+          Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+  
+      let result = provider.block_hash_and_number().await;
+      match result {
+          Ok(block_hash_and_number) => {
+              println!("{block_hash_and_number:#?}");
+          }
+          Err(err) => {
+              eprintln!("Error: {err}");
+          }
+      
+      }
+    }
+  `,
   },
 
   // Return the currently configured StarkNet chain id
