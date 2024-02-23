@@ -311,30 +311,30 @@ const ReadMethods = [
     `,
     starknetGo: `package main
 
-    import (
-      "context"
-      "fmt"
-      "log"
-    
-      "github.com/NethermindEth/starknet.go/rpc"
-    )
-    
-    func main() {
-      rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
-    
-      client, err := rpc.NewClient(rpcUrl)
-      if err != nil {
-        log.Fatal(err)
-      }
-    
-      provider := rpc.NewProvider(client)
-      specVersion, err := provider.SpecVersion(context.Background())
-      if err != nil {
-        log.Fatal(err)
-      }
-    
-      fmt.Println("SpecVersion:", specVersion)
-    }`,
+import (
+  "context"
+  "fmt"
+  "log"
+
+  "github.com/NethermindEth/starknet.go/rpc"
+)
+
+func main() {
+  rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
+
+  client, err := rpc.NewClient(rpcUrl)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  provider := rpc.NewProvider(client)
+  specVersion, err := provider.SpecVersion(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  fmt.Println("SpecVersion:", specVersion)
+}`,
     starknetRs: `use starknet::{
   providers::{
     jsonrpc::{HttpTransport, JsonRpcClient},
