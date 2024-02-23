@@ -16,7 +16,7 @@ import (
 	"github.com/NethermindEth/starknet.go/utils"
 )
 func Class() {
-	rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/?apikey=GGfMLnf5icG5MM68u2mV8gXj83bx2uC9KowlL2yoKQSM71b3"
+	rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
 	client, err := rpc.NewClient(rpcUrl)
 	if err != nil {
 		log.Fatal(err)
