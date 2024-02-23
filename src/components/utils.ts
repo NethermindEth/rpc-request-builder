@@ -393,3 +393,9 @@ export const formatStarknetRsParamsSimulationFlags = (
   return `
       vec![${simulationFlagsEnums}]`;
 };
+
+export const toCamelCase = (str: string) => {
+  return str.replace(/_([a-z])/g, function (match, letter) {
+    return letter.toUpperCase();
+  });
+};
