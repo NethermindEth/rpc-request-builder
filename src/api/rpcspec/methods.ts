@@ -359,7 +359,7 @@ const ReadMethods = [
     if err != nil {
       log.Fatal(err)
     }
-    fmt.Println("ClassOutput : ", result)
+    fmt.Println("ClassOutput: ", result)
   }`,
     starknetRs: ``,
   },
