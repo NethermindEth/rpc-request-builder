@@ -421,7 +421,6 @@ export const formatStarknetRsParamsMsgFromL1 = (
         .map((data) => `felt!("${data}")`)
         .join(", ")}],
     }`;
-};
 
 export const toCamelCase = (str: string) => {
   return str.replace(/_([a-z])/g, function (match, letter) {
