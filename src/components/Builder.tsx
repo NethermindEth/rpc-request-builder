@@ -106,6 +106,23 @@ const Builder = () => {
   const [decodedResponse, setDecodedResponse] = useState(
     DEFAULT_DECODED_RESPONSE
   );
+
+
+
+  useEffect(() => {
+    const storedValue = sessionStorage.getItem('apikey');
+    if (storedValue) {
+      setApiKey(storedValue);
+    }
+  }, []);
+
+  const handleApiKeyChange = (event:any) => {
+    const newApiKey = event.target.value;
+    setApiKey(newApiKey);
+    sessionStorage.setItem('apikey', newApiKey);
+  };
+
+
   const copyToClipboard = (type: string) => {
     if (type == "request") {
       navigator.clipboard.writeText(
@@ -608,6 +625,8 @@ const Builder = () => {
       }
     };
 
+ 
+
     return (
       <>
         {
@@ -846,10 +865,8 @@ const Builder = () => {
             {isUrlFromNethermindDomain(rpcUrl) && (
               <div>
                 <input
-                  onChange={(e) => {
-                    const newApiKey = e.target.value;
-                    setApiKey(newApiKey);
-                  }}
+                  onChange={handleApiKeyChange}
+                  value={apiKey}
                   className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                   placeholder="API Key"
                   type="password"
