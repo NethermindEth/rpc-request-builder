@@ -413,7 +413,15 @@ func main() {
   console.log(transaction);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}ctx := context.Background()
+    txStatus, err := provider.GetTransactionByHash(ctx, "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11")
+     if err != nil {
+          log.Fatal(err) 
+      }
+      
+     fmt.Println(txStatus)
+  }
+    `,
     starknetRs: ``,
   },
 
