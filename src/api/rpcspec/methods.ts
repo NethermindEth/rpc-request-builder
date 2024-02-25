@@ -8,21 +8,22 @@ const provider = new RpcProvider({
 `;
 
 const STARKNET_GO_PREFIX = `
-package main
 import (
-  "context"
-  "fmt"
-  "log"
-  "github.com/NethermindEth/starknet.go/rpc"
+	"context"
+	"fmt"
+	"log"
+	"github.com/NethermindEth/starknet.go/rpc"
+	"github.com/NethermindEth/starknet.go/utils"
 )
-    
-func main() {
-  rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
-  client, err := rpc.NewClient(rpcUrl)
-  if err != nil {
-    log.Fatal(err)
-  }
-  provider := rpc.NewProvider(client)`;
+func Class() {
+	rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
+	client, err := rpc.NewClient(rpcUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	provider := rpc.NewProvider(client)
+  
+  `;
 
 const block_id = {
   placeholder: "latest",
@@ -451,7 +452,17 @@ func main() {
     console.log(class);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}classHash, err := utils.HexToFelt("0x3131fa018d520a037686ce3efddeab8f28895662f019ca3ca18a626650f7d1e")
+    if err != nil {
+      log.Fatal(err)
+    }
+  
+    result, err := provider.Class(context.Background(), rpc.BlockID{Tag: "latest"}, classHash)
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("ClassOutput: ", result)
+  }`,
     starknetRs: ``,
   },
 
@@ -466,7 +477,18 @@ func main() {
     console.log(classHash);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}contractAddress, err := utils.HexToFelt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49")
+    if err != nil {
+      log.Fatal(err)
+    }
+  
+    result, err := provider.ClassHashAt(context.Background(), rpc.BlockID{Tag: "latest"}, contractAddress)
+    if err != nil {
+      log.Fatal(err)
+    }
+    
+    fmt.Println("ClassHash:", result)
+  }`,
     starknetRs: ``,
   },
 
@@ -481,7 +503,18 @@ func main() {
     console.log(class);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}contractAddress, err := utils.HexToFelt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49")
+    if err != nil {
+      log.Fatal(err)
+    }
+  
+    result, err := provider.ClassAt(context.Background(), rpc.BlockID{Tag: "latest"}, contractAddress)
+    if err != nil {
+      log.Fatal(err)
+    }
+    
+    fmt.Println("ClassOutput: ", result)
+  }`,
     starknetRs: ``,
   },
 
