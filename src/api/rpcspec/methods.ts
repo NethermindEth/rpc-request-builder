@@ -804,7 +804,7 @@ const TraceMethods = [
 });
     `,
     starknetGo: `${STARKNET_GO_PREFIX}
-    result, err := provider.TraceBlockTransactions(context.Background(), blockID)
+    result, err := provider.TraceBlockTransactions(context.Background(), rpc.BlockID{Tag: "latest"})
     if err != nil {
       log.Fatal(err)
     }
@@ -830,7 +830,7 @@ const TraceMethods = [
     },
     starknetJs: ``,
     starknetGo: `${STARKNET_GO_PREFIX}
-    result, err := provider.SimulateTransactions(context.Background(), blockID, transactions, simulationFlags)
+    result, err := provider.SimulateTransactions(context.Background(), rpc.BlockID{Tag: "latest"}, transactions, simulationFlags)
     if err != nil {
         log.Fatal(err)
     }
