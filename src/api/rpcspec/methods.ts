@@ -227,7 +227,12 @@ func main() {
   console.log(block);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockWithTxHashes(context.Background(), rpc.BlockID{Tag: "latest"})
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("BlockWithTxHashes:", result)
+  }`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag},
       providers::{
@@ -269,7 +274,12 @@ func main() {
   console.log(block);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockWithTxs(context.Background(), rpc.BlockID{Tag: "latest"})
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("BlockWithTxs:", result)
+  }`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag},
       providers::{
@@ -309,7 +319,12 @@ func main() {
     console.log(stateUpdate);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.StateUpdate(context.Background(), rpc.BlockID{Tag: "latest"})
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("StateUpdate:", result)
+  }`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag,MaybePendingStateUpdate},
       providers::{
@@ -352,7 +367,12 @@ func main() {
     console.log(storage);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.StorageAt(context.Background(), rpc.BlockID{Tag: "latest"})
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("StorageAt:", result)
+  }`,
     starknetRs: `use starknet::{
       core::types::{BlockId,BlockTag},
       macros::felt,
@@ -606,7 +626,12 @@ func main() {
     console.log(blockNumber);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockNumber(context.Background())
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("BlockNumber:", result)
+  }`,
     starknetRs: `use starknet::providers::{
       jsonrpc::{HttpTransport, JsonRpcClient},
       Provider, Url,
@@ -640,7 +665,12 @@ func main() {
     console.log(blockHashAndNumber);
     });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockHashAndNumber(context.Background())
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("BlockHashAndNumber:", result)
+  }`,
     starknetRs: `use starknet::providers::{
       jsonrpc::{HttpTransport, JsonRpcClient},
       Provider, Url,
