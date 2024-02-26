@@ -782,7 +782,8 @@ const TraceMethods = [
 });
     `,
     starknetGo: `${STARKNET_GO_PREFIX}
-    result, err := provider.getTransactionTrace(context.Background())
+    transactionHash, _ := utils.HexToFelt("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11")
+    result, err := provider.TraceTransaction(context.Background(), transactionHash)
     if err != nil {
       log.Fatal(err)
     }
@@ -803,7 +804,7 @@ const TraceMethods = [
 });
     `,
     starknetGo: `${STARKNET_GO_PREFIX}
-    result, err := provider.getBlockTransactionsTraces(context.Background())
+    result, err := provider.TraceBlockTransactions(context.Background(), blockID)
     if err != nil {
       log.Fatal(err)
     }
@@ -829,12 +830,11 @@ const TraceMethods = [
     },
     starknetJs: ``,
     starknetGo: `${STARKNET_GO_PREFIX}
-    result, err := provider.simulateTransaction(context.Background())
+    result, err := provider.SimulateTransactions(context.Background(), blockID, transactions, simulationFlags)
     if err != nil {
-      log.Fatal(err)
+        log.Fatal(err)
     }
     fmt.Println("SimulateTransaction:", result)
-  }
     `,
     starknetRs: ``,
   },
