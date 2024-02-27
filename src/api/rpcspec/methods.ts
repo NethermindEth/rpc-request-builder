@@ -214,7 +214,32 @@ func main() {
 
   fmt.Println("SpecVersion:", specVersion)
 }`,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+ 
+  let result = provider.
+    spec_version()
+    .await;
+  match result {
+    Ok(spec_version) => {
+      println!("{spec_version:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 
   // Get block information with transaction hashes given the block id
@@ -463,7 +488,34 @@ func main() {
     }
     fmt.Println("ClassOutput: ", result)
   }`,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  core::types::{BlockId, BlockTag},
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+  
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+  
+  let result = provider
+    .get_class(BlockId::Tag(BlockTag::Latest), felt!("0x3131fa018d520a037686ce3efddeab8f28895662f019ca3ca18a626650f7d1e"))
+    .await;
+  match result {
+    Ok(contract_class) => {
+      println!("{contract_class:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 
   // Get the contract class hash in the given block for the contract deployed at the given address
@@ -489,7 +541,34 @@ func main() {
     
     fmt.Println("ClassHash:", result)
   }`,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  core::types::{BlockId, BlockTag},
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+      
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+      
+  let result = provider
+    .get_class_hash_at(BlockId::Tag(BlockTag::Latest), felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"))
+    .await;
+  match result {
+    Ok(class_hash) => {
+      println!("{class_hash:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 
   // Get the contract class definition in the given block at the given address
@@ -515,7 +594,34 @@ func main() {
     
     fmt.Println("ClassOutput: ", result)
   }`,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  core::types::{BlockId, BlockTag},
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+          
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+          
+  let result = provider
+    .get_class_at(BlockId::Tag(BlockTag::Latest), felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"))
+    .await;
+  match result {
+    Ok(contract_class) => {
+      println!("{contract_class:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 
   // Get the number of transactions in a block given a block id
