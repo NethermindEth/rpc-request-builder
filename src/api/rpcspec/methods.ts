@@ -845,7 +845,7 @@ func main() {
     starknetJs: ``,
     starknetGo: ``,
     starknetRs: `use starknet::{
-      core::types::{BlockId, BlockTag, FieldElement,EventFilter},
+      core::types::{BlockId, BlockTag, FieldElement, EventFilter},
       macros::felt,
       providers::{
           jsonrpc::{HttpTransport, JsonRpcClient},
