@@ -478,11 +478,11 @@ func main() {
     `,
     starknetGo: ``,
     starknetRs: `${STARKNET_RS_PREFIX}let result = provider
-          .get_transaction_status(felt!("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"))
+          .get_transaction_by_hash(felt!("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"))
           .await;
       match result {
-          Ok(transaction_status) => {
-              println!("{:#?}", transaction_status);
+          Ok(transaction) => {
+              println!("{transaction:#?}");
           }
           Err(err) => {
               eprintln!("Error: {}", err);
