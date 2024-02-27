@@ -23,7 +23,9 @@ import {
   extractNodeUrl,
   capitalize,
   toCamelCase,
+  constructParamsArray,
 } from "./utils";
+import { transformParamsToArray } from "./utils";
 
 const formatName = (name: string) => {
   // Make first letter uppercase
@@ -33,56 +35,6 @@ const formatName = (name: string) => {
 };
 
 const Builder = () => {
-  const transformParamsToArray = (params: any) => {
-    const transformParam = (param: any): any => {
-      if (param.description || param.placeholder) {
-        if (param.oneOf) {
-          return {
-            description: param.description,
-            index: param.index,
-            value: param.oneOf.map((option: any) => ({
-              name: option.name,
-              placeholder: option.placeholder,
-              pattern: option.pattern,
-              enum: option.enum,
-            })),
-          };
-        } else {
-          return {
-            description: param.description,
-            placeholder: param.placeholder,
-          };
-        }
-      } else if (!param.placeholder && !param.description) {
-        let params = {};
-        for (const [key, value] of Object.entries(param)) {
-          params = {
-            ...params,
-            [key]: {
-              ...transformParam(value),
-              name: key,
-            },
-          };
-        }
-
-        return params;
-      }
-      return {};
-    };
-
-    return params
-      ? Object.entries(params).flatMap(([name, value]) => {
-          if (Array.isArray(value)) {
-            let values = value.map((param: any) => {
-              return transformParam(param);
-            });
-
-            return { name, value: values };
-          }
-          return { name, value: transformParam(value) };
-        })
-      : [];
-  };
 
   const [method, setMethod] = useState(Methods[0]);
   const [paramsArray, setParamsArray] = useState(
@@ -106,6 +58,33 @@ const Builder = () => {
   const [decodedResponse, setDecodedResponse] = useState(
     DEFAULT_DECODED_RESPONSE
   );
+
+
+
+  useEffect(() => {
+    const storedKey = sessionStorage.getItem('apikey');
+    if (storedKey) {
+      setApiKey(storedKey);
+    }
+  }, []);
+
+  const handleApiKeyChange = (event:any) => {
+    const newApiKey = event.target.value;
+    setApiKey(newApiKey);
+    sessionStorage.setItem('apikey', newApiKey);
+  }
+
+  const handleMethodChange = (event:any) => {
+    const index = parseInt(event.target.value);
+    const latestParamsArray = Methods[index].params
+      ? transformParamsToArray(Methods[index].params)
+      : [];
+
+    setMethod(Methods[index]);
+    setParamsArray(latestParamsArray);
+  }
+
+
   const copyToClipboard = (type: string) => {
     if (type == "request") {
       navigator.clipboard.writeText(
@@ -180,65 +159,6 @@ const Builder = () => {
     }
   };
 
-  interface ParamsObject {
-    [key: string]: any;
-  }
-
-  const constructParamsArray = (latestParamsArray: any) => {
-    if (latestParamsArray.length === 0) {
-      return [];
-    }
-
-    const processPlaceholder = (latestParams: any, isEntryPoint: boolean) => {
-      let placeholder = latestParams.placeholder;
-      if (isEntryPoint) {
-        placeholder = selector.getSelectorFromName(placeholder);
-      }
-      return placeholder;
-    };
-
-    const constructParams = (latestParams: any, isEntryPoint: boolean): any => {
-      if (!latestParams.description) {
-        return Object.entries(latestParams).reduce(
-          (acc: ParamsObject, [key, value]) => {
-            acc[key] = Array.isArray(value)
-              ? value.map((val) =>
-                  constructParams(val, key === "entry_point_selector")
-                )
-              : constructParams(value, key === "entry_point_selector");
-            return acc;
-          },
-          {}
-        );
-      } else if (latestParams?.value?.length > 0) {
-        const selectedOption = latestParams.value[latestParams.index];
-        const placeholder = processPlaceholder(selectedOption, isEntryPoint);
-        return selectedOption.enum
-          ? placeholder
-          : { [selectedOption.name]: placeholder };
-      } else {
-        return processPlaceholder(latestParams, isEntryPoint);
-      }
-    };
-
-    return latestParamsArray.reduce(
-      (accumulator: any, param: { value: any[]; name: string }) => {
-        if (Array.isArray(param.value)) {
-          accumulator[param.name] = param.value.map((val: any) =>
-            constructParams(val, val.name === "entry_point_selector")
-          );
-        } else {
-          accumulator[param.name] = constructParams(
-            param.value,
-            param.name === "entry_point_selector"
-          );
-        }
-
-        return accumulator;
-      },
-      {}
-    );
-  };
 
   const sendRequest = async () => {
     setisLoading(true);
@@ -608,6 +528,8 @@ const Builder = () => {
       }
     };
 
+ 
+
     return (
       <>
         {
@@ -845,10 +767,8 @@ const Builder = () => {
             {isUrlFromNethermindDomain(rpcUrl) && (
               <div>
                 <input
-                  onChange={(e) => {
-                    const newApiKey = e.target.value;
-                    setApiKey(newApiKey);
-                  }}
+                  onChange={handleApiKeyChange}
+                  value={apiKey}
                   className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                   placeholder="API Key"
                   type="password"
@@ -865,17 +785,10 @@ const Builder = () => {
                 </p>
               </div>
             )}
-            <select
-              onChange={(e) => {
-                const index = parseInt(e.target.value);
-                const latestParamsArray = Methods[index].params
-                  ? transformParamsToArray(Methods[index].params)
-                  : [];
 
-                setMethod(Methods[index]);
-                setParamsArray(latestParamsArray);
-              }}
-              className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+            <select
+              onChange={handleMethodChange}
+             className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
             >
               {Methods.map((method, index) => (
                 <option key={method.name} value={index}>
