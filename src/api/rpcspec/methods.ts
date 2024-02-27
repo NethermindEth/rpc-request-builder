@@ -7,23 +7,22 @@ const provider = new RpcProvider({
 
 `;
 
-const STARKNET_GO_PREFIX = `
-import (
+const STARKNET_GO_PREFIX = `import (
 	"context"
 	"fmt"
 	"log"
 	"github.com/NethermindEth/starknet.go/rpc"
 	"github.com/NethermindEth/starknet.go/utils"
 )
-func Class() {
-	rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
+
+func main() {
+  rpcUrl := "https://free-rpc.nethermind.io/mainnet-juno/"
 	client, err := rpc.NewClient(rpcUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
-	provider := rpc.NewProvider(client)
-  
-  `;
+
+	provider := rpc.NewProvider(client)`;
 
 const block_id = {
   placeholder: "latest",
@@ -359,7 +358,7 @@ func main() {
     Provider, Url,
   },
 };
-    
+
 #[tokio::main]
 async fn main() {
   let provider = JsonRpcClient::new(HttpTransport::new(
@@ -400,7 +399,6 @@ async fn main() {
       },
   };
   
- 
   #[tokio::main]
   async fn main() {
       
@@ -616,16 +614,17 @@ async fn main() {
     console.log(class);
 });
     `,
-    starknetGo: `${STARKNET_GO_PREFIX}classHash, err := utils.HexToFelt("0x3131fa018d520a037686ce3efddeab8f28895662f019ca3ca18a626650f7d1e")
+    starknetGo: `${STARKNET_GO_PREFIX}
+    classHash, err := utils.HexToFelt("0x3131fa018d520a037686ce3efddeab8f28895662f019ca3ca18a626650f7d1e")
     if err != nil {
       log.Fatal(err)
     }
-  
+
     result, err := provider.Class(context.Background(), rpc.BlockID{Tag: "latest"}, classHash)
     if err != nil {
       log.Fatal(err)
     }
-    fmt.Println("ClassOutput: ", result)
+    fmt.Println("Class: ", result)
   }`,
     starknetRs: `use starknet::{
   core::types::{BlockId, BlockTag},
@@ -668,7 +667,8 @@ async fn main() {
     console.log(classHash);
 });
     `,
-    starknetGo: `${STARKNET_GO_PREFIX}contractAddress, err := utils.HexToFelt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49")
+    starknetGo: `${STARKNET_GO_PREFIX}
+    contractAddress, err := utils.HexToFelt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49")
     if err != nil {
       log.Fatal(err)
     }
@@ -721,7 +721,8 @@ async fn main() {
     console.log(class);
 });
     `,
-    starknetGo: `${STARKNET_GO_PREFIX}contractAddress, err := utils.HexToFelt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49")
+    starknetGo: `${STARKNET_GO_PREFIX}
+    contractAddress, err := utils.HexToFelt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49")
     if err != nil {
       log.Fatal(err)
     }
