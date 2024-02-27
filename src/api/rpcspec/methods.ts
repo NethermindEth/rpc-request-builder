@@ -936,6 +936,8 @@ const TraceMethods = [
     },
     starknetJs: ``,
     starknetGo: `${STARKNET_GO_PREFIX}
+    transactions := []rpc.Transaction{BROADCASTED_INVOKE_TXN}
+    simulationFlags := []rpc.SimulationFlag{{Type: "SKIP_VALIDATE"}}
     result, err := provider.SimulateTransactions(context.Background(), rpc.BlockID{Tag: "latest"}, transactions, simulationFlags)
     if err != nil {
         log.Fatal(err)
