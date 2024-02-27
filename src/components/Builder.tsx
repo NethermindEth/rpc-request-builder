@@ -23,9 +23,14 @@ import {
   extractNodeUrl,
   formatRawParams,
   formatStarknetRsParamsBlockId,
+  formatStarknetRsParamsFunctionCall,
+  formatStarknetRsParamsInvokeTransaction,
+  formatStarknetRsParamsDeclareTransaction,
+  formatStarknetRsParamsDeployAccountTransaction,
   formatStarknetRsParamsTransactions,
   formatStarknetRsParamsSimulationFlags,
   toCamelCase,
+  formatStarknetRsParamsMsgFromL1,
 } from "./utils";
 
 const formatName = (name: string) => {
@@ -38,7 +43,7 @@ const formatName = (name: string) => {
 const Builder = () => {
   const transformParamsToArray = (params: any) => {
     const transformParam = (param: any): any => {
-      if (param.description || param.placeholder) {
+      if (param.description !== undefined || param.placeholder !== undefined) {
         if (param.oneOf) {
           return {
             description: param.description,
@@ -57,7 +62,10 @@ const Builder = () => {
             placeholder: param.placeholder,
           };
         }
-      } else if (!param.placeholder && !param.description) {
+      } else if (
+        param.placeholder === undefined &&
+        param.description === undefined
+      ) {
         let params = {};
         for (const [key, value] of Object.entries(param)) {
           params = {
@@ -220,13 +228,14 @@ const Builder = () => {
         if (selectedOption.enum) {
           return placeholder;
         } else if (selectedOption.fields) {
+          const [type, version] = placeholder.split(" ");
           return Object.entries(selectedOption.fields).reduce(
             (acc: ParamsObject, [key, value]) => {
               const { placeholder } = value as { placeholder: string };
               acc[key] = placeholder;
               return acc;
             },
-            { type: placeholder }
+            { type, version: `0x${version.charAt(1)}` }
           );
         } else {
           return { [selectedOption.name]: placeholder };
@@ -408,12 +417,39 @@ const Builder = () => {
             ([key, value]) => {
               if (key === "block_id") {
                 return formatStarknetRsParamsBlockId(value);
+              } else if (key === "request") {
+                if (Array.isArray(value)) {
+                  return formatStarknetRsParamsTransactions(
+                    value.map((t: any) => ({ ...t, is_query: true }))
+                  );
+                }
+                return formatStarknetRsParamsFunctionCall(value);
+              } else if (key === "message") {
+                return formatStarknetRsParamsMsgFromL1(value);
+              } else if (key === "invoke_transaction") {
+                return formatStarknetRsParamsInvokeTransaction({
+                  ...value,
+                  is_query: false,
+                });
+              } else if (key === "declare_transaction") {
+                return formatStarknetRsParamsDeclareTransaction({
+                  ...value,
+                  is_query: false,
+                });
+              } else if (key === "deploy_account_transaction") {
+                return formatStarknetRsParamsDeployAccountTransaction({
+                  ...value,
+                  is_query: false,
+                });
               } else if (key === "transactions") {
                 return formatStarknetRsParamsTransactions(
                   value.map((t: any) => ({ ...t, is_query: true }))
                 );
               } else if (key === "simulation_flags") {
-                return formatStarknetRsParamsSimulationFlags(value);
+                return formatStarknetRsParamsSimulationFlags(
+                  value,
+                  methodName === "estimate_fee"
+                );
               } else if (typeof value === "object" && !Array.isArray(value)) {
                 // If value is an object, return its stringified values
                 return Object.values(value).map((val) => {
@@ -530,7 +566,7 @@ const Builder = () => {
     newValue: any
   ) => {
     if (typeof placeholder === "number") {
-      return parseInt(newValue);
+      return newValue === "0x" ? 0 : parseInt(newValue);
     } else if (Array.isArray(placeholder)) {
       return newValue.split(",");
     }
@@ -577,35 +613,52 @@ const Builder = () => {
       const updatedParamsArray = structuredClone(prevParamsArray);
 
       if (subKey === undefined) {
-        let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
+        if (selectedIdx === undefined) {
+          let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
 
-        placeholder = handlePlaceholderChange(placeholder, value);
+          placeholder = handlePlaceholderChange(placeholder, value);
 
-        updatedParamsArray[index].value[key].placeholder = placeholder;
+          updatedParamsArray[index].value[key].placeholder = placeholder;
 
-        return updatedParamsArray;
-      } else if (selectedIdx === undefined) {
-        let placeholder =
-          updatedParamsArray[index]?.value[subKey][key]?.placeholder;
+          return updatedParamsArray;
+        } else {
+          let placeholder =
+            updatedParamsArray[index]?.value.value[selectedIdx].fields[key]
+              ?.placeholder;
 
-        placeholder = handlePlaceholderChange(placeholder, value);
+          placeholder = handlePlaceholderChange(placeholder, value);
 
-        updatedParamsArray[index].value[subKey][key].placeholder = placeholder;
-
-        return updatedParamsArray;
-      } else {
-        let placeholder =
-          updatedParamsArray[index]?.value[subKey].value[selectedIdx].fields[
+          updatedParamsArray[index].value.value[selectedIdx].fields[
             key
-          ]?.placeholder;
+          ].placeholder = placeholder;
 
-        placeholder = handlePlaceholderChange(placeholder, value);
+          return updatedParamsArray;
+        }
+      } else {
+        if (selectedIdx === undefined) {
+          let placeholder =
+            updatedParamsArray[index]?.value[subKey][key]?.placeholder;
 
-        updatedParamsArray[index].value[subKey].value[selectedIdx].fields[
-          key
-        ].placeholder = placeholder;
+          placeholder = handlePlaceholderChange(placeholder, value);
 
-        return updatedParamsArray;
+          updatedParamsArray[index].value[subKey][key].placeholder =
+            placeholder;
+
+          return updatedParamsArray;
+        } else {
+          let placeholder =
+            updatedParamsArray[index]?.value[subKey].value[selectedIdx].fields[
+              key
+            ]?.placeholder;
+
+          placeholder = handlePlaceholderChange(placeholder, value);
+
+          updatedParamsArray[index].value[subKey].value[selectedIdx].fields[
+            key
+          ].placeholder = placeholder;
+
+          return updatedParamsArray;
+        }
       }
     });
 
@@ -660,7 +713,7 @@ const Builder = () => {
                   />
                 ) : (
                   <div>
-                    {!value.placeholder ? (
+                    {value.placeholder === undefined ? (
                       <FormatInputField
                         param={value}
                         index={index}
