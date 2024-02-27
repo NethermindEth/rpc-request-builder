@@ -45,9 +45,6 @@ async fn main() {
 
 const STARKNET_GO_PREFIX = `
 import (
-
-const STARKNET_GO_PREFIX = `import (
-
 	"context"
 	"fmt"
 	"log"
@@ -62,7 +59,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	provider := rpc.NewProvider(client)`;
+	provider := rpc.NewProvider(client) `;
 
 const block_id = {
   placeholder: "latest",
