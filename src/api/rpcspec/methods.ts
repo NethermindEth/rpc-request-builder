@@ -414,7 +414,14 @@ async fn main() {
     console.log(transactionStatus);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.GetTransactionStatus(context.Background(), "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11")
+     if err != nil {
+          log.Fatal(err) 
+      }
+      
+     fmt.Println(result)
+  }
+  `,
     starknetRs: ``,
   },
 
@@ -428,7 +435,14 @@ async fn main() {
   console.log(transaction);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.GetTransactionByHash(context.Background(), "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11")
+     if err != nil {
+          log.Fatal(err) 
+      }
+      
+     fmt.Println(result)
+  }
+    `,
     starknetRs: ``,
   },
 
@@ -446,7 +460,14 @@ async fn main() {
   console.log(transaction);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.GetTransactionByHash(context.Background(), "latest", 0)
+     if err != nil {
+          log.Fatal(err) 
+      }
+      
+     fmt.Println(result)
+  }
+    `,
     starknetRs: ``,
   },
 
@@ -460,7 +481,14 @@ async fn main() {
   console.log(transactionReceipt);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.GetTransactionReceipt(context.Background(), "0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11")
+    if err != nil {
+         log.Fatal(err) 
+     }
+     
+    fmt.Println(result)
+ }
+    `,
     starknetRs: ``,
   },
 
@@ -635,7 +663,14 @@ async fn main() {
     console.log(transactionCount);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.GetBlockTransactionCount(context.Background(), "latest")
+    if err != nil {
+         log.Fatal(err) 
+     }
+     
+    fmt.Println(result)
+ }
+    `,
     starknetRs: ``,
   },
 
@@ -826,7 +861,37 @@ async fn main() {
       },
     },
     starknetJs: ``,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.GetTransactionStatus(context.Background(),
+		map[string]interface{}{
+			"from_block": blockID,
+			"to_block":   blockID,
+			"address":    contractAddress,
+			"keys": map[string]interface{}{
+				"placeholder": [][]string{
+					{
+						"0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e",
+					},
+				},
+				"description": "The key to the storage value for the given contract",
+				"type":        "array",
+			},
+			"continuation_token": map[string]interface{}{
+				"placeholder": "",
+				"description": "The token returned from the previous query. If no token is provided the first page is returned",
+			},
+			"chunk_size": map[string]interface{}{
+				"placeholder": 2,
+				"description": "The number of events to return",
+			},
+		})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(result)
+  }
+    `,
     starknetRs: ``,
   },
 
