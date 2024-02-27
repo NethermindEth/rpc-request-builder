@@ -4,15 +4,8 @@ export enum Chain {
   Sepolia,
 }
 
-export type FunctionCall = {
-  contract_address: string;
-  entry_point_selector: string;
-  calldata: string[];
-};
-
 export type BroadcastedInvokeTransactionV1 = {
-  type: "INVOKE";
-  version: "0x1";
+  type: "INVOKE_V1";
   sender_address: string;
   calldata: string[];
   max_fee: string;
@@ -22,8 +15,7 @@ export type BroadcastedInvokeTransactionV1 = {
 };
 
 export type BroadcastedInvokeTransactionV3 = {
-  type: "INVOKE";
-  version: "0x3";
+  type: "INVOKE_V3";
   sender_address: string;
   calldata: string[];
   signature: string[];
@@ -41,8 +33,7 @@ export type BroadcastedInvokeTransactionV3 = {
 };
 
 export type BroadcastedDeclareTransactionV2 = {
-  type: "DECLARE";
-  version: "0x2";
+  type: "DECLARE_V2";
   sender_address: string;
   max_fee: string;
   signature: string[];
@@ -51,8 +42,7 @@ export type BroadcastedDeclareTransactionV2 = {
 };
 
 export type BroadcastedDeclareTransactionV3 = {
-  type: "DECLARE";
-  version: "0x3";
+  type: "DECLARE_V3";
   sender_address: string;
   signature: string[];
   nonce: string;
@@ -69,8 +59,7 @@ export type BroadcastedDeclareTransactionV3 = {
 };
 
 export type BroadcastedDeployAccountTransactionV1 = {
-  type: "DEPLOY_ACCOUNT";
-  version: "0x1";
+  type: "DEPLOY_ACCOUNT_V1";
   max_fee: string;
   signature: string[];
   nonce: string;
@@ -81,8 +70,7 @@ export type BroadcastedDeployAccountTransactionV1 = {
 };
 
 export type BroadcastedDeployAccountTransactionV3 = {
-  type: "DEPLOY_ACCOUNT";
-  version: "0x3";
+  type: "DEPLOY_ACCOUNT_V3";
   signature: string[];
   nonce: string;
   contract_address_salt: string;
@@ -106,10 +94,3 @@ export type BroadcastedTransaction =
   | BroadcastedDeclareTransactionV3
   | BroadcastedDeployAccountTransactionV1
   | BroadcastedDeployAccountTransactionV3;
-
-export type MsgFromL1 = {
-  from_address: string;
-  to_address: string;
-  entry_point_selector: string;
-  payload: string[];
-};

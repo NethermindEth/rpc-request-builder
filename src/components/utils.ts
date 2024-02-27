@@ -1,5 +1,4 @@
 import {
-  FunctionCall,
   BroadcastedTransaction,
   BroadcastedInvokeTransactionV1,
   BroadcastedInvokeTransactionV3,
@@ -7,7 +6,6 @@ import {
   BroadcastedDeclareTransactionV3,
   BroadcastedDeployAccountTransactionV1,
   BroadcastedDeployAccountTransactionV3,
-  MsgFromL1,
 } from "./types";
 
 export const isUrlFromNethermindDomain = (url: string) => {
@@ -111,16 +109,6 @@ export const formatStarknetRsParamsBlockId = (
   return "INVALID_BLOCK_ID";
 };
 
-export const formatStarknetRsParamsFunctionCall = (
-  functionCall: FunctionCall
-) => `FunctionCall {
-        contract_address: felt!("${functionCall.contract_address}"),
-        entry_point_selector: felt!("${functionCall.entry_point_selector}"),
-        calldata: vec![${functionCall.calldata
-          .map((data) => `felt!("${data}")`)
-          .join(", ")}],
-      }`;
-
 const formatStarknetRsParamsUint = (uint: string, size: string) =>
   `${size}::from_str_radix("${uint}".trim_start_matches("0x"), 16).unwrap()`;
 
@@ -204,18 +192,20 @@ const formatBroadcastedInvokeTransactionV3 = (
 
 const formatBroadcastedDeclareTransactionV2 = (
   transaction: BroadcastedDeclareTransactionV2
-) => `BroadcastedDeclareTransaction::V2(
-          BroadcastedDeclareTransactionV2 {
-            sender_address: felt!("${transaction.sender_address}"),
-            compiled_class_hash,
-            max_fee: felt!("${transaction.max_fee}"),
-            signature: vec![${transaction.signature
-              .map((sig) => `felt!("${sig}")`)
-              .join(", ")}],
-            nonce: felt!("${transaction.nonce}"),
-            contract_class: Arc::new(flattened_class),
-            is_query: ${transaction.is_query}
-          }
+) => `BroadcastedTransaction::Declare(
+          BroadcastedDeclareTransaction::V2(
+            BroadcastedDeclareTransactionV2 {
+              sender_address: felt!("${transaction.sender_address}"),
+              compiled_class_hash,
+              max_fee: felt!("${transaction.max_fee}"),
+              signature: vec![${transaction.signature
+                .map((sig) => `felt!("${sig}")`)
+                .join(", ")}],
+              nonce: felt!("${transaction.nonce}"),
+              contract_class: Arc::new(flattened_class),
+              is_query: ${transaction.is_query}
+            }
+          )
         )`;
 
 const formatBroadcastedDeclareTransactionV3 = (
@@ -251,22 +241,24 @@ const formatBroadcastedDeclareTransactionV3 = (
 
 const formatBroadcastedDeployAccountTransactionV1 = (
   transaction: BroadcastedDeployAccountTransactionV1
-) => `BroadcastedDeployAccountTransaction::V1(
-          BroadcastedDeployAccountTransactionV1 {
-            max_fee: felt!("${transaction.max_fee}"),
-            signature: vec![${transaction.signature
-              .map((sig) => `felt!("${sig}")`)
-              .join(", ")}],
-            nonce: felt!("${transaction.nonce}"),
-            contract_address_salt: felt!("${
-              transaction.contract_address_salt
-            }"),
-            constructor_calldata: vec![${transaction.constructor_calldata
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            class_hash: felt!("${transaction.class_hash}"),
-            is_query: ${transaction.is_query}
-          }
+) => `BroadcastedTransaction::DeployAccount(
+          BroadcastedDeployAccountTransaction::V1(
+            BroadcastedDeployAccountTransactionV1 {
+              max_fee: felt!("${transaction.max_fee}"),
+              signature: vec![${transaction.signature
+                .map((sig) => `felt!("${sig}")`)
+                .join(", ")}],
+              nonce: felt!("${transaction.nonce}"),
+              contract_address_salt: felt!("${
+                transaction.contract_address_salt
+              }"),
+              constructor_calldata: vec![${transaction.constructor_calldata
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              class_hash: felt!("${transaction.class_hash}"),
+              is_query: ${transaction.is_query}
+            }
+          )
         )`;
 
 const formatBroadcastedDeployAccountTransactionV3 = (
@@ -301,76 +293,29 @@ const formatBroadcastedDeployAccountTransactionV3 = (
           }
         )`;
 
-export const formatStarknetRsParamsInvokeTransaction = (
-  transaction: BroadcastedInvokeTransactionV1 | BroadcastedInvokeTransactionV3
-) => {
-  switch (transaction.version) {
-    case "0x1": {
-      return formatBroadcastedInvokeTransactionV1(transaction);
-    }
-    case "0x3": {
-      return formatBroadcastedInvokeTransactionV3(transaction);
-    }
-    default: {
-      return "INVALID_TRANSACTION";
-    }
-  }
-};
-
-export const formatStarknetRsParamsDeclareTransaction = (
-  transaction: BroadcastedDeclareTransactionV2 | BroadcastedDeclareTransactionV3
-) => {
-  switch (transaction.version) {
-    case "0x2": {
-      return formatBroadcastedDeclareTransactionV2(transaction);
-    }
-    case "0x3": {
-      return formatBroadcastedDeclareTransactionV3(transaction);
-    }
-    default: {
-      return "INVALID_TRANSACTION";
-    }
-  }
-};
-
-export const formatStarknetRsParamsDeployAccountTransaction = (
-  transaction:
-    | BroadcastedDeployAccountTransactionV1
-    | BroadcastedDeployAccountTransactionV3
-) => {
-  switch (transaction.version) {
-    case "0x1": {
-      return formatBroadcastedDeployAccountTransactionV1(transaction);
-    }
-    case "0x3": {
-      return formatBroadcastedDeployAccountTransactionV3(transaction);
-    }
-    default: {
-      return "INVALID_TRANSACTION";
-    }
-  }
-};
-
 export const formatStarknetRsParamsTransactions = (
   transactions: BroadcastedTransaction[]
 ) => {
   const transactionsFormatted = transactions
     .map((transaction) => {
       switch (transaction.type) {
-        case "INVOKE": {
-          return `BroadcastedTransaction::Invoke(
-            ${formatStarknetRsParamsInvokeTransaction(transaction)}
-          )`;
+        case "INVOKE_V1": {
+          return formatBroadcastedInvokeTransactionV1(transaction);
         }
-        case "DECLARE": {
-          return `BroadcastedTransaction::Declare(
-            ${formatStarknetRsParamsDeclareTransaction(transaction)}
-          )`;
+        case "INVOKE_V3": {
+          return formatBroadcastedInvokeTransactionV3(transaction);
         }
-        case "DEPLOY_ACCOUNT": {
-          return `BroadcastedTransaction::DeployAccount(
-            ${formatStarknetRsParamsDeployAccountTransaction(transaction)}
-          )`;
+        case "DECLARE_V2": {
+          return formatBroadcastedDeclareTransactionV2(transaction);
+        }
+        case "DECLARE_V3": {
+          return formatBroadcastedDeclareTransactionV3(transaction);
+        }
+        case "DEPLOY_ACCOUNT_V1": {
+          return formatBroadcastedDeployAccountTransactionV1(transaction);
+        }
+        case "DEPLOY_ACCOUNT_V3": {
+          return formatBroadcastedDeployAccountTransactionV3(transaction);
         }
         default: {
           return "INVALID_TRANSACTION";
@@ -385,21 +330,16 @@ export const formatStarknetRsParamsTransactions = (
 };
 
 export const formatStarknetRsParamsSimulationFlags = (
-  simulationFlags: string[],
-  estimateFee: boolean
+  simulationFlags: string[]
 ) => {
   const simulationFlagsEnums = simulationFlags
     .map((simulationFlag) => {
       switch (simulationFlag) {
         case "SKIP_VALIDATE": {
-          return estimateFee
-            ? "SimulationFlagForEstimateFee::SkipValidate"
-            : "SimulationFlag::SkipValidate";
+          return "SimulationFlag::SkipValidate";
         }
         case "SKIP_FEE_CHARGE": {
-          return estimateFee
-            ? "INVALID_SIMULATION_FLAG"
-            : "SimulationFlag::SkipFeeCharge";
+          return "SimulationFlag::SkipFeeCharge";
         }
         default: {
           return "INVALID_SIMULATION_FLAG";
@@ -416,14 +356,3 @@ export const toCamelCase = (str: string) => {
     return letter.toUpperCase();
   });
 };
-
-export const formatStarknetRsParamsMsgFromL1 = (
-  msgFromL1: MsgFromL1
-) => `MsgFromL1 {
-      from_address: EthAddress::from_hex("${msgFromL1.from_address}").unwrap(),
-      to_address: felt!("${msgFromL1.to_address}"),
-      entry_point_selector: felt!("${msgFromL1.entry_point_selector}"),
-      payload: vec![${msgFromL1.payload
-        .map((data) => `felt!("${data}")`)
-        .join(", ")}],
-    }`;
