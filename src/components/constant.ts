@@ -44,7 +44,7 @@ export const DEFAULT_STARKNET_RS_REQUEST = `use starknet::{
 	  Provider, Url,
 	},
   };
-  
+
   #[tokio::main]
   async fn main() {
 	let provider = JsonRpcClient::new(HttpTransport::new(
