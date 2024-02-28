@@ -568,7 +568,7 @@ const Builder = () => {
     if (typeof placeholder === "number") {
       return newValue === "0x" ? 0 : parseInt(newValue);
     } else if (Array.isArray(placeholder)) {
-      return newValue.split(",");
+      return JSON.parse(newValue);
     }
     return newValue;
   };
@@ -698,7 +698,7 @@ const Builder = () => {
                 {Array.isArray(value.placeholder) ? (
                   <textarea
                     ref={(el) => setRef(el, index, key)}
-                    value={value.placeholder?.join(",")}
+                    value={JSON.stringify(value.placeholder, null, 2)}
                     onChange={(e) => {
                       handleObjectParamChange(
                         e.target.value || "0x",
@@ -713,7 +713,7 @@ const Builder = () => {
                   />
                 ) : (
                   <div>
-                    {value.placeholder === undefined ? (
+                    {value.placeholder === undefined && value.value ? (
                       <FormatInputField
                         param={value}
                         index={index}
@@ -724,13 +724,11 @@ const Builder = () => {
                         ref={(el) => setRef(el, index, key)}
                         value={value.placeholder}
                         onChange={(e) => {
-                          handleObjectParamChange(
-                            e.target.value || "0x",
-                            index,
-                            key,
-                            subKey,
-                            selectedIdx
-                          );
+                          const val =
+                            typeof value.placeholder === "number"
+                              ? parseInt(e.target.value) || 0
+                              : e.target.value || "0x";
+                          handleObjectParamChange(val, index, key, subKey, selectedIdx);
                         }}
                         className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                       />
@@ -788,7 +786,7 @@ const Builder = () => {
 
                             value =
                               typeof value === "number"
-                                ? parseInt(e.target.value)
+                                ? parseInt(e.target.value) || 0
                                 : e.target.value;
 
                             updatedParamsArray[index].value.value[
@@ -804,7 +802,7 @@ const Builder = () => {
 
                             value =
                               typeof value === "number"
-                                ? parseInt(e.target.value)
+                                ? parseInt(e.target.value) || 0
                                 : e.target.value;
 
                             updatedParamsArray[index].value[subKey].value[
@@ -906,7 +904,7 @@ const Builder = () => {
                         );
                       }}
                       className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
-                      value={param.placeholder?.join(",")}
+                      value={JSON.stringify(param.placeholder, null, 2)}
                     />
                   ) : (
                     <input
@@ -1201,6 +1199,7 @@ const Builder = () => {
                     }}
                   />
                 )}
+
                 {requestTab == "starknetRs" && (
                   <Editor
                     height="50vh"
