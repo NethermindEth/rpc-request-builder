@@ -7,7 +7,44 @@ const provider = new RpcProvider({
 
 `;
 
-const STARKNET_GO_PREFIX = `import (
+
+
+const STARKNET_RS_PREFIX = `use starknet::{
+  macros::felt,
+  providers::{
+      jsonrpc::{HttpTransport, JsonRpcClient},
+      Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+      Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  `;
+
+const STARKNET_RS_PREFIX_WITH_BLOCKID = `use starknet::{
+  core::types::{BlockId, BlockTag},
+  macros::felt,
+  providers::{
+      jsonrpc::{HttpTransport, JsonRpcClient},
+      Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+      Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+  
+  `;
+
+
+const STARKNET_GO_PREFIX = `
+import (
 	"context"
 	"fmt"
 	"log"
@@ -22,7 +59,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	provider := rpc.NewProvider(client)`;
+	provider := rpc.NewProvider(client) `;
 
 const block_id = {
   placeholder: "latest",
@@ -41,7 +78,7 @@ const block_id = {
   ],
 };
 
-const contract_address = {
+ const contract_address = {
   placeholder:
     "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
   description: "The address of the contract",
@@ -188,7 +225,6 @@ const ReadMethods = [
 });
     `,
     starknetGo: `package main
-
 import (
   "context"
   "fmt"
@@ -214,6 +250,7 @@ func main() {
   fmt.Println("SpecVersion:", specVersion)
 }`,
     starknetRs: `use starknet::{
+
   providers::{
     jsonrpc::{HttpTransport, JsonRpcClient},
     Provider, Url,
@@ -239,6 +276,7 @@ async fn main() {
   }
 }
 `,
+
   },
 
   // Get block information with transaction hashes given the block id
@@ -415,7 +453,19 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `${STARKNET_RS_PREFIX}let result = provider
+        .get_transaction_status(felt!("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"))
+        .await;
+    match result {
+        Ok(transaction_status) => {
+            println!("{:#?}", transaction_status);
+        }
+        Err(err) => {
+            eprintln!("Error: {}", err);
+        }
+    }
+}
+`,
   },
 
   // Get the details and status of a submitted transaction
@@ -429,7 +479,19 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `${STARKNET_RS_PREFIX}let result = provider
+          .get_transaction_by_hash(felt!("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"))
+          .await;
+      match result {
+          Ok(transaction) => {
+              println!("{transaction:#?}");
+          }
+          Err(err) => {
+              eprintln!("Error: {}", err);
+          }
+      }
+  }
+  `,
   },
 
   // Get the details of a transaction by a given block id and index
@@ -447,7 +509,19 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `${STARKNET_RS_PREFIX_WITH_BLOCKID}let result = provider
+          .get_transaction_by_block_id_and_index(BlockId::Tag(BlockTag::Latest), 0)
+          .await;
+      match result {
+          Ok(transaction) => {
+              println!("{:#?}", transaction);
+          }
+          Err(err) => {
+              eprintln!("Error: {}", err);
+          }
+      }
+  }
+  `,
   },
 
   // Get the transaction receipt by the transaction hash
@@ -461,7 +535,19 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `${STARKNET_RS_PREFIX}let result = provider
+          .get_transaction_receipt(felt!("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11"))
+          .await;
+      match result {
+          Ok(transaction_receipt) => {
+              println!("{:#?}", transaction_receipt);
+          }
+          Err(err) => {
+              eprintln!("Error: {}", err);
+          }
+      }
+  }
+  `,
   },
 
   // Get the contract class definition in the given block associated with the given hash
@@ -636,7 +722,24 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `${STARKNET_RS_PREFIX_WITH_BLOCKID}let provider = JsonRpcClient::new(HttpTransport::new(
+          Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+  
+      
+      let result = provider
+          .get_block_transaction_count(BlockId::Tag(BlockTag::Latest))
+          .await;
+      match result {
+          Ok(transaction_count) => {
+              println!("{:#?}", transaction_count);
+          }
+          Err(err) => {
+              eprintln!("Error: {}", err);
+          }
+      }
+  }
+  `,
   },
 
   // Call a StarkNet function without creating a StarkNet transaction
@@ -827,7 +930,46 @@ async fn main() {
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+      core::types::{BlockId, BlockTag, FieldElement, EventFilter},
+      macros::felt,
+      providers::{
+          jsonrpc::{HttpTransport, JsonRpcClient},
+          Provider, Url,
+      },
+  };
+  
+  #[tokio::main]
+  async fn main() {
+      let provider = JsonRpcClient::new(HttpTransport::new(
+          Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+      ));
+  
+      let result = provider
+          .get_events(
+              EventFilter {
+                  from_block: Some(BlockId::Tag(BlockTag::Latest)),
+                  to_block: Some(BlockId::Tag(BlockTag::Latest)),
+                  address: Some(FieldElement::from_hex_be(
+                      "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
+                  ).unwrap()),
+                  keys : Some(vec![vec![FieldElement::from_hex_be(
+                      "0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e",
+                  ).unwrap(),],])
+              },
+              None,
+              2,
+          )
+          .await;
+      match result {
+          Ok(events_page) => {
+              println!("{:#?}", events_page);
+          }
+          Err(err) => {
+              eprintln!("Error: {}", err);
+          }
+      }
+  } `,
   },
 
   // Get the nonce associated with the given address in the given block
