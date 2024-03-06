@@ -627,7 +627,7 @@ const Builder = () => {
         if (selectedIdx === undefined) {
           let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
           let name = updatedParamsArray[index]?.name;
-          placeholder = handlePlaceholderChange(placeholder, value);
+          placeholder = handlePlaceholderChange(placeholder, value, name);
 
           updatedParamsArray[index].value[key].placeholder = placeholder;
 
@@ -739,7 +739,13 @@ const Builder = () => {
                             typeof value.placeholder === "number"
                               ? parseInt(e.target.value) || 0
                               : e.target.value || "0x";
-                          handleObjectParamChange(val, index, key, subKey, selectedIdx);
+                          handleObjectParamChange(
+                            val,
+                            index,
+                            key,
+                            subKey,
+                            selectedIdx
+                          );
                         }}
                         className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                       />
