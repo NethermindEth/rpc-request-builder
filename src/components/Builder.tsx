@@ -409,9 +409,22 @@ const Builder = () => {
               if (key === "block_id") {
                 return formatStarknetRsParamsBlockId(value);
               } else if (key === "transactions") {
-                return formatStarknetRsParamsTransactions(
-                  value.map((t: any) => ({ ...t, is_query: true }))
-                );
+                const formattedValue = value.map((t: any) => {
+                  const formattedTransaction = { ...t, is_query: true };
+                  for (const prop of [
+                    "calldata",
+                    "signature",
+                    "paymaster_data",
+                    "account_deployment_data",
+                    "constructor_calldata",
+                  ]) {
+                    formattedTransaction[prop] = Array.isArray(t[prop])
+                      ? t[prop]
+                      : [];
+                  }
+                  return formattedTransaction;
+                });
+                return formatStarknetRsParamsTransactions(formattedValue);
               } else if (key === "simulation_flags") {
                 return formatStarknetRsParamsSimulationFlags(value);
               } else if (typeof value === "object" && !Array.isArray(value)) {
@@ -611,7 +624,7 @@ const Builder = () => {
             key
           ]?.placeholder;
 
-        placeholder = handlePlaceholderChange(placeholder, value);
+        placeholder = handlePlaceholderChange(placeholder, value, key);
 
         updatedParamsArray[index].value[subKey].value[selectedIdx].fields[
           key
@@ -687,7 +700,13 @@ const Builder = () => {
                             typeof value.placeholder === "number"
                               ? parseInt(e.target.value) || 0
                               : e.target.value || "0x";
-                          handleObjectParamChange(val, index, key, subKey, selectedIdx);
+                          handleObjectParamChange(
+                            val,
+                            index,
+                            key,
+                            subKey,
+                            selectedIdx
+                          );
                         }}
                         className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                       />
