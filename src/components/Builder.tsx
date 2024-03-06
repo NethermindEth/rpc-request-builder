@@ -563,12 +563,21 @@ const Builder = () => {
 
   const handlePlaceholderChange = (
     placeholder: string | number | Array<string | number>,
-    newValue: any
+    newValue: any,
+    name: string
   ) => {
     if (typeof placeholder === "number") {
       return newValue === "0x" ? 0 : parseInt(newValue);
-    } else if (Array.isArray(placeholder)) {
-      return JSON.parse(newValue);
+    } else if (
+      Array.isArray(placeholder) ||
+      name.toLowerCase() == "signature" ||
+      name.toLowerCase() == "calldata"
+    ) {
+      try {
+        return JSON.parse(newValue);
+      } catch {
+        return newValue;
+      }
     }
     return newValue;
   };
@@ -585,11 +594,13 @@ const Builder = () => {
       const updatedParamsArray = structuredClone(prevParamsArray);
       if (key === undefined) {
         let placeholder = updatedParamsArray[index]?.value?.placeholder;
-        placeholder = handlePlaceholderChange(placeholder, value);
+        let name = updatedParamsArray[index]?.name;
+        placeholder = handlePlaceholderChange(placeholder, value, name);
         updatedParamsArray[index].value.placeholder = placeholder;
       } else {
         let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
-        placeholder = handlePlaceholderChange(placeholder, value);
+        let name = updatedParamsArray[index]?.name;
+        placeholder = handlePlaceholderChange(placeholder, value, name);
         updatedParamsArray[index].value[key].placeholder = placeholder;
       }
       return updatedParamsArray;
@@ -615,7 +626,7 @@ const Builder = () => {
       if (subKey === undefined) {
         if (selectedIdx === undefined) {
           let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
-
+          let name = updatedParamsArray[index]?.name;
           placeholder = handlePlaceholderChange(placeholder, value);
 
           updatedParamsArray[index].value[key].placeholder = placeholder;
@@ -625,8 +636,8 @@ const Builder = () => {
           let placeholder =
             updatedParamsArray[index]?.value.value[selectedIdx].fields[key]
               ?.placeholder;
-
-          placeholder = handlePlaceholderChange(placeholder, value);
+          let name = updatedParamsArray[index]?.name;
+          placeholder = handlePlaceholderChange(placeholder, value, name);
 
           updatedParamsArray[index].value.value[selectedIdx].fields[
             key
@@ -639,7 +650,7 @@ const Builder = () => {
           let placeholder =
             updatedParamsArray[index]?.value[subKey][key]?.placeholder;
 
-          placeholder = handlePlaceholderChange(placeholder, value);
+          placeholder = handlePlaceholderChange(placeholder, value, key);
 
           updatedParamsArray[index].value[subKey][key].placeholder =
             placeholder;
@@ -651,7 +662,7 @@ const Builder = () => {
               key
             ]?.placeholder;
 
-          placeholder = handlePlaceholderChange(placeholder, value);
+          placeholder = handlePlaceholderChange(placeholder, value, key);
 
           updatedParamsArray[index].value[subKey].value[selectedIdx].fields[
             key
