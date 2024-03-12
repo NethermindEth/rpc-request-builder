@@ -40,7 +40,8 @@ async fn main() {
   
   `;
 
-const STARKNET_GO_PREFIX = `
+const STARKNET_GO_PREFIX = `package main
+
 import (
 	"context"
 	"fmt"
@@ -108,6 +109,7 @@ const entry_point_selector = {
 const calldata = {
   placeholder: [],
   description: `The calldata to send with the function call (e.g. ["0x1", "0x2"])`,
+  type: "Array",
 };
 
 const class_hash = {
@@ -193,12 +195,14 @@ const paymaster_data = {
   placeholder: [],
   description:
     "Data needed to allow the paymaster to pay for the transaction in native tokens",
+  type: "Array",
 };
 
 const account_deployment_data = {
   placeholder: [],
   description:
     "Data needed to deploy the account contract from which this tx will be initiated",
+  type: "Array",
 };
 
 const nonce_data_availability_mode = {
@@ -214,8 +218,7 @@ const fee_data_availability_mode = {
 };
 
 const contract_address_salt = {
-  placeholder:
-    "0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c",
+  placeholder: "0x0",
   description: "The salt for the address of the deployed contract",
 };
 
@@ -272,6 +275,7 @@ const BROADCASTED_DECLARE_V2_TXN = {
   name: "DECLARE V2",
   fields: {
     sender_address: contract_address,
+    compiled_class_hash: class_hash,
     max_fee,
     signature: signature_declare,
     nonce,
@@ -283,6 +287,7 @@ const BROADCASTED_DECLARE_V3_TXN = {
   name: "DECLARE V3",
   fields: {
     sender_address: contract_address,
+    compiled_class_hash: class_hash,
     signature: signature_declare,
     nonce,
     resource_bounds_l1_gas_max_amount,
@@ -369,6 +374,7 @@ const ReadMethods = [
 });
     `,
     starknetGo: `package main
+
 import (
   "context"
   "fmt"
@@ -405,7 +411,7 @@ async fn main() {
   let provider = JsonRpcClient::new(HttpTransport::new(
     Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
   ));
- 
+
   let result = provider.
     spec_version()
     .await;
@@ -431,7 +437,12 @@ async fn main() {
   console.log(block);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockWithTxHashes(context.Background(), rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockWithTxHashes:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag},
       providers::{
@@ -472,7 +483,12 @@ async fn main() {
   console.log(block);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockWithTxs(context.Background(), rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockWithTxs:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag},
       providers::{
@@ -512,7 +528,12 @@ async fn main() {
     console.log(stateUpdate);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.StateUpdate(context.Background(), rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("StateUpdate:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag,MaybePendingStateUpdate},
       providers::{
@@ -555,7 +576,14 @@ async fn main() {
     console.log(storage);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}contractAddress, _ := utils.HexToFelt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49")
+  key, _ := utils.HexToFelt("0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e")
+  result, err := provider.StorageAt(context.Background(), contractAddress, key, rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("StorageAt:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId,BlockTag},
       macros::felt,
@@ -1019,6 +1047,7 @@ async fn main() {
         payload: {
           placeholder: [],
           description: "The payload of the message",
+          type: "Array",
         },
       },
       block_id,
@@ -1071,7 +1100,12 @@ async fn main() {
     console.log(blockNumber);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockNumber(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockNumber:", result)
+}`,
     starknetRs: `use starknet::providers::{
       jsonrpc::{HttpTransport, JsonRpcClient},
       Provider, Url,
@@ -1105,7 +1139,12 @@ async fn main() {
     console.log(blockHashAndNumber);
     });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockHashAndNumber(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockHashAndNumber:", result)
+}`,
     starknetRs: `use starknet::providers::{
       jsonrpc::{HttpTransport, JsonRpcClient},
       Provider, Url,
@@ -1140,7 +1179,32 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider
+    .chain_id()
+    .await;
+  match result {
+    Ok(chain_id) => {
+      println!("{chain_id:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 
   // Returns an object about the sync status, or false if the node is not syncing
@@ -1152,7 +1216,31 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider
+    .syncing()
+    .await;
+  match result {
+    Ok(sync_status) => {
+      println!("{sync_status:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}`,
   },
 
   // Returns all events matching the given filter
@@ -1239,7 +1327,34 @@ async fn main() {
 });
     `,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  core::types::{BlockId, BlockTag},
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider
+    .get_nonce(BlockId::Tag(BlockTag::Latest), felt!("0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7"))
+    .await;
+  match result {
+    Ok(nonce) => {
+      println!("{nonce:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 ];
 
@@ -1521,76 +1636,76 @@ async fn main() {
     params: {
       block_id,
       transactions: [BROADCASTED_TXN],
-      simulation_flags,
+      simulation_flags: [
+        {
+          placeholder: "SKIP_VALIDATE",
+          description:
+            "describes what parts of the transaction should be executed",
+        },
+      ],
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: `use std::sync::Arc;
+    starknetRs: `use starknet::{
+      core::types::{
+          contract::SierraClass, BlockId, BlockTag, BroadcastedDeclareTransaction,
+          BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
+          BroadcastedDeployAccountTransaction, BroadcastedDeployAccountTransactionV1,
+          BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransaction,
+          BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, BroadcastedTransaction,
+          DataAvailabilityMode, FieldElement, ResourceBounds, ResourceBoundsMapping, SimulationFlag,
+      },
+      macros::felt,
+      providers::{
+          jsonrpc::{HttpTransport, JsonRpcClient},
+          Provider, Url,
+      },
+  };
+  use std::sync::Arc;
+  
+  #[tokio::main]
+  async fn main() {
+    // Sierra class artifact. Output of the "starknet-compile" command
+    let contract_artifact: SierraClass =
+      serde_json::from_reader(std::fs::File::open("/path/to/contract/artifact.json").unwrap())
+          .unwrap();
 
-use starknet::{
-  core::types::{
-    contract::SierraClass, FieldElement, BlockId, BlockTag, BroadcastedTransaction,
-    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3,
-    BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
-    BroadcastedDeployAccountTransaction, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
-    DataAvailabilityMode, ResourceBoundsMapping, ResourceBounds, SimulationFlag
-  },
-  macros::felt,
-  providers::{
-      jsonrpc::{HttpTransport, JsonRpcClient},
-      Provider, Url,
-  },
-};
+      // We need to flatten the ABI into a string first
+    let flattened_class = contract_artifact.flatten().unwrap();
 
-#[tokio::main]
-async fn main() {
-  // Sierra class artifact. Output of the "starknet-compile" command
-  let contract_artifact: SierraClass =
-    serde_json::from_reader(std::fs::File::open("/path/to/contract/artifact.json").unwrap())
-    .unwrap();
-  // Class hash of the compiled CASM class from the "starknet-sierra-compile" command
-  let compiled_class_hash =
-    FieldElement::from_hex_be("COMPILED_CASM_CLASS_HASH_IN_HEX_HERE").unwrap();
-  // We need to flatten the ABI into a string first
-  let flattened_class = contract_artifact.flatten().unwrap();
+    let provider = JsonRpcClient::new(HttpTransport::new(
+        Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+    ));
 
-  let provider = JsonRpcClient::new(HttpTransport::new(
-    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
-  ));
-
-  let result = provider
-    .simulate_transactions(
-      BlockId::Tag(BlockTag::Latest),
-      vec![
-        BroadcastedTransaction::Invoke(
-          BroadcastedInvokeTransaction::V1(
-            BroadcastedInvokeTransactionV1 {
-              sender_address: felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),
-              calldata: vec![],
-              max_fee: felt!("0x0"),
-              signature: vec![
-                felt!("0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98"),
-                felt!("0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af")
-              ],
-              nonce: felt!("0x0"),
-              is_query: true
-            }
-          )
+    let result = provider
+        .simulate_transactions(
+            BlockId::Tag(BlockTag::Latest),
+            vec![BroadcastedTransaction::Invoke(
+                BroadcastedInvokeTransaction::V1(BroadcastedInvokeTransactionV1 {
+                    sender_address: felt!(
+                        "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"
+                    ),
+                    calldata: vec![],
+                    max_fee: felt!("0x0"),
+                    signature: vec![
+                        felt!("0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98"),
+                        felt!("0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af"),
+                    ],
+                    nonce: felt!("0x0"),
+                    is_query: true,
+                }),
+            )],
+            vec![SimulationFlag::SkipValidate],
         )
-      ],
-      vec![
-        SimulationFlag::SkipValidate
-      ]
-    )
-    .await;
-  match result {
-    Ok(simulated_transactions) => {
-      println!("{simulated_transactions:#?}");
+        .await;
+    match result {
+        Ok(simulated_transactions) => {
+            println!("{simulated_transactions:#?}");
+        }
+        Err(err) => {
+            eprintln!("Error: {err}");
+        }
     }
-    Err(err) => {
-      eprintln!("Error: {err}");
-    }
-  }
 }
 `,
   },
