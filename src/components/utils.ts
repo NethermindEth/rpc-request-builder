@@ -145,8 +145,7 @@ const formatResourceBounds = ({
 
 const formatBroadcastedInvokeTransactionV1 = (
   transaction: BroadcastedInvokeTransactionV1
-) => `BroadcastedTransaction::Invoke(
-          BroadcastedInvokeTransaction::V1(
+) => `BroadcastedInvokeTransaction::V1(
             BroadcastedInvokeTransactionV1 {
               sender_address: felt!("${transaction.sender_address}"),
               calldata: vec![${transaction.calldata
@@ -159,13 +158,11 @@ const formatBroadcastedInvokeTransactionV1 = (
               nonce: felt!("${transaction.nonce}"),
               is_query: ${transaction.is_query}
             }
-          ),
-      )`;
+          )`;
 
 const formatBroadcastedInvokeTransactionV3 = (
   transaction: BroadcastedInvokeTransactionV3
-) => `BroadcastedTransaction::Invoke(
-          BroadcastedInvokeTransaction::V3(
+) => `BroadcastedInvokeTransaction::V3(
             BroadcastedInvokeTransactionV3 {
               sender_address: felt!("${transaction.sender_address}"),
               calldata: vec![${transaction.calldata
@@ -191,13 +188,11 @@ const formatBroadcastedInvokeTransactionV3 = (
               },
               is_query: ${transaction.is_query}
             }
-          ),
-      )`;
+          )`;
 
 const formatBroadcastedDeclareTransactionV2 = (
   transaction: BroadcastedDeclareTransactionV2
-) => `BroadcastedTransaction::Declare(
-          BroadcastedDeclareTransaction::V2(
+) => `BroadcastedDeclareTransaction::V2(
             BroadcastedDeclareTransactionV2 {
               sender_address: felt!("${transaction.sender_address}"),
               compiled_class_hash: felt!("${transaction.compiled_class_hash}"),
@@ -209,13 +204,11 @@ const formatBroadcastedDeclareTransactionV2 = (
               contract_class: Arc::new(flattened_class),
               is_query: ${transaction.is_query}
             }
-          ),
-      )`;
+          )`;
 
 const formatBroadcastedDeclareTransactionV3 = (
   transaction: BroadcastedDeclareTransactionV3
-) => `BroadcastedTransaction::Declare(
-          BroadcastedDeclareTransaction::V3(
+) => `BroadcastedDeclareTransaction::V3(
             BroadcastedDeclareTransactionV3 {
               sender_address: felt!("${transaction.sender_address}"),
               compiled_class_hash: felt!("${transaction.compiled_class_hash}"),
@@ -240,13 +233,11 @@ const formatBroadcastedDeclareTransactionV3 = (
               },
               is_query: ${transaction.is_query}
             }
-          ),
-      )`;
+          )`;
 
 const formatBroadcastedDeployAccountTransactionV1 = (
   transaction: BroadcastedDeployAccountTransactionV1
-) => `BroadcastedTransaction::DeployAccount(
-          BroadcastedDeployAccountTransaction::V1(
+) => `BroadcastedDeployAccountTransaction::V1(
             BroadcastedDeployAccountTransactionV1 {
               max_fee: felt!("${transaction.max_fee}"),
               signature: vec![${transaction.signature
@@ -262,13 +253,11 @@ const formatBroadcastedDeployAccountTransactionV1 = (
               class_hash: felt!("${transaction.class_hash}"),
               is_query: ${transaction.is_query}
             }
-          ),
-        )`;
+          )`;
 
 const formatBroadcastedDeployAccountTransactionV3 = (
   transaction: BroadcastedDeployAccountTransactionV3
-) => `BroadcastedTransaction::DeployAccount(
-          BroadcastedDeployAccountTransaction::V3(
+) => `BroadcastedDeployAccountTransaction::V3(
             BroadcastedDeployAccountTransactionV3 {
               signature: vec![${transaction.signature
                 .map((sig) => `felt!("${sig}")`)
@@ -294,8 +283,7 @@ const formatBroadcastedDeployAccountTransactionV3 = (
               },
               is_query: ${transaction.is_query}
             }
-          ),
-      )`;
+          )`;
 
 export const formatStarknetRsParamsInvokeTransaction = (
   transaction: BroadcastedInvokeTransactionV1 | BroadcastedInvokeTransactionV3
@@ -376,6 +364,20 @@ export const formatStarknetRsParamsTransactions = (
     .join(", ");
   return `
       vec![${transactionsFormatted}]`;
+};
+
+export const cleanTransaction = (t: any) => {
+  const result = { ...t };
+  for (const prop of [
+    "calldata",
+    "signature",
+    "paymaster_data",
+    "account_deployment_data",
+    "constructor_calldata",
+  ]) {
+    result[prop] = Array.isArray(t[prop]) ? t[prop] : [];
+  }
+  return result;
 };
 
 export const formatStarknetRsParamsSimulationFlags = (

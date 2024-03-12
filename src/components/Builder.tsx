@@ -27,6 +27,7 @@ import {
   formatStarknetRsParamsDeclareTransaction,
   formatStarknetRsParamsDeployAccountTransaction,
   formatStarknetRsParamsTransactions,
+  cleanTransaction,
   formatStarknetRsParamsSimulationFlags,
   toCamelCase,
 } from "./utils";
@@ -414,40 +415,26 @@ const Builder = () => {
                 return formatStarknetRsParamsBlockId(value);
               } else if (key === "invoke_transaction") {
                 return formatStarknetRsParamsInvokeTransaction({
-                  ...value,
+                  ...cleanTransaction(value),
                   is_query: false,
                 });
               } else if (key === "declare_transaction") {
                 return formatStarknetRsParamsDeclareTransaction({
-                  ...value,
+                  ...cleanTransaction(value),
                   is_query: false,
                 });
               } else if (key === "deploy_account_transaction") {
                 return formatStarknetRsParamsDeployAccountTransaction({
-                  ...value,
+                  ...cleanTransaction(value),
                   is_query: false,
                 });
               } else if (key === "transactions") {
                 return formatStarknetRsParamsTransactions(
-                  value.map((t: any) => ({ ...t, is_query: true }))
+                  value.map((t: any) => ({
+                    ...cleanTransaction(t),
+                    is_query: true,
+                  }))
                 );
-              } else if (key === "transactions") {
-                const formattedValue = value.map((t: any) => {
-                  const formattedTransaction = { ...t, is_query: true };
-                  for (const prop of [
-                    "calldata",
-                    "signature",
-                    "paymaster_data",
-                    "account_deployment_data",
-                    "constructor_calldata",
-                  ]) {
-                    formattedTransaction[prop] = Array.isArray(t[prop])
-                      ? t[prop]
-                      : [];
-                  }
-                  return formattedTransaction;
-                });
-                return formatStarknetRsParamsTransactions(formattedValue);
               } else if (key === "simulation_flags") {
                 return formatStarknetRsParamsSimulationFlags(value);
               } else if (typeof value === "object" && !Array.isArray(value)) {
@@ -631,11 +618,10 @@ const Builder = () => {
       const updatedParamsArray = structuredClone(prevParamsArray);
 
       if (subKey === undefined) {
-
         if (selectedIdx === undefined) {
           let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
           let placeholderType = updatedParamsArray[index]?.value[key]?.type;
-          
+
           placeholder = handlePlaceholderChange(
             placeholder,
             value,
@@ -652,7 +638,7 @@ const Builder = () => {
           let placeholderType =
             updatedParamsArray[index]?.value.value[selectedIdx].fields[key]
               ?.type;
-          
+
           placeholder = handlePlaceholderChange(
             placeholder,
             value,
@@ -671,7 +657,6 @@ const Builder = () => {
             updatedParamsArray[index]?.value[subKey][key]?.placeholder;
           let placeholderType =
             updatedParamsArray[index]?.value[subKey][key]?.type;
-          
 
           placeholder = handlePlaceholderChange(
             placeholder,
