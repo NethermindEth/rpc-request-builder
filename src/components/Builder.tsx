@@ -21,7 +21,10 @@ import {
   isUrlFromNethermindDomain,
   extractRpcUrl,
   extractNodeUrl,
-  capitalize,
+  formatRawParams,
+  formatStarknetRsParamsBlockId,
+  formatStarknetRsParamsTransactions,
+  formatStarknetRsParamsSimulationFlags,
   toCamelCase,
 } from "./utils";
 
@@ -45,6 +48,7 @@ const Builder = () => {
               placeholder: option.placeholder,
               pattern: option.pattern,
               enum: option.enum,
+              fields: option.fields,
             })),
           };
         } else {
@@ -213,9 +217,20 @@ const Builder = () => {
       } else if (latestParams?.value?.length > 0) {
         const selectedOption = latestParams.value[latestParams.index];
         const placeholder = processPlaceholder(selectedOption, isEntryPoint);
-        return selectedOption.enum
-          ? placeholder
-          : { [selectedOption.name]: placeholder };
+        if (selectedOption.enum) {
+          return placeholder;
+        } else if (selectedOption.fields) {
+          return Object.entries(selectedOption.fields).reduce(
+            (acc: ParamsObject, [key, value]) => {
+              const { placeholder } = value as { placeholder: string };
+              acc[key] = placeholder;
+              return acc;
+            },
+            { type: placeholder }
+          );
+        } else {
+          return { [selectedOption.name]: placeholder };
+        }
       } else {
         return processPlaceholder(latestParams, isEntryPoint);
       }
@@ -383,7 +398,7 @@ const Builder = () => {
     const updateStarknetRsParams = (currentParamsObj: {
       [key: string]: any;
     }) => {
-      const regexPattern = /provider\s*\.(\w+)\((.*)\s*\.await;/;
+      const regexPattern = /provider\s*\.(\w+)\(\s*([\s\S]*)\s*\)\s*\.await;/;
       const codeSnippet = method.starknetRs;
 
       const updatedCode = codeSnippet.replace(
@@ -392,24 +407,26 @@ const Builder = () => {
           const values = Object.entries(currentParamsObj).flatMap(
             ([key, value]) => {
               if (key === "block_id") {
-                if (
-                  typeof value === "string" &&
-                  ["latest", "pending"].includes(value)
-                ) {
-                  return `BlockId::Tag(BlockTag::${capitalize(value)})`;
-                } else if (typeof value === "object") {
-                  if (value.block_hash !== undefined) {
-                    const { block_hash: blockHash } = value as {
-                      block_hash: string;
-                    };
-                    return `BlockId::Hash(felt!("${blockHash}"))`;
-                  } else if (value.block_number !== undefined) {
-                    const { block_number: blockNumber } = value as {
-                      block_number: number;
-                    };
-                    return `BlockId::Number(${blockNumber})`;
+                return formatStarknetRsParamsBlockId(value);
+              } else if (key === "transactions") {
+                const formattedValue = value.map((t: any) => {
+                  const formattedTransaction = { ...t, is_query: true };
+                  for (const prop of [
+                    "calldata",
+                    "signature",
+                    "paymaster_data",
+                    "account_deployment_data",
+                    "constructor_calldata",
+                  ]) {
+                    formattedTransaction[prop] = Array.isArray(t[prop])
+                      ? t[prop]
+                      : [];
                   }
-                }
+                  return formattedTransaction;
+                });
+                return formatStarknetRsParamsTransactions(formattedValue);
+              } else if (key === "simulation_flags") {
+                return formatStarknetRsParamsSimulationFlags(value);
               } else if (typeof value === "object" && !Array.isArray(value)) {
                 // If value is an object, return its stringified values
                 return Object.values(value).map((val) => {
@@ -447,7 +464,7 @@ const Builder = () => {
       const jsonObject = {
         jsonrpc: "2.0",
         method: methodName,
-        params,
+        params: formatRawParams(params),
         id: 1,
       };
       const jsonDataString = JSON.stringify(jsonObject, null, 4);
@@ -551,13 +568,18 @@ const Builder = () => {
     setCurrentCursorPosition(cursorPosition);
 
     setParamsArray((prevParamsArray) => {
-      const updatedParamsArray = [...prevParamsArray];
-      let placeholder = updatedParamsArray[index]?.value?.placeholder;
-      let name = updatedParamsArray[index]?.name;
-
-      placeholder = handlePlaceholderChange(placeholder, value, name);
-
-      updatedParamsArray[index].value.placeholder = placeholder;
+      const updatedParamsArray = structuredClone(prevParamsArray);
+      if (key === undefined) {
+        let placeholder = updatedParamsArray[index]?.value?.placeholder;
+        let name = updatedParamsArray[index]?.name;
+        placeholder = handlePlaceholderChange(placeholder, value, name);
+        updatedParamsArray[index].value.placeholder = placeholder;
+      } else {
+        let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
+        let name = updatedParamsArray[index]?.name;
+        placeholder = handlePlaceholderChange(placeholder, value, name);
+        updatedParamsArray[index].value[key].placeholder = placeholder;
+      }
       return updatedParamsArray;
     });
 
@@ -570,12 +592,13 @@ const Builder = () => {
     index: number,
     key: string,
     subKey?: number | string,
+    selectedIdx?: number,
     cursorPosition?: number
   ) => {
     setCurrentCursorPosition(cursorPosition);
 
     setParamsArray((prevParamsArray) => {
-      const updatedParamsArray = [...prevParamsArray];
+      const updatedParamsArray = structuredClone(prevParamsArray);
 
       if (subKey === undefined) {
         let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
@@ -586,13 +609,26 @@ const Builder = () => {
         updatedParamsArray[index].value[key].placeholder = placeholder;
 
         return updatedParamsArray;
-      } else {
+      } else if (selectedIdx === undefined) {
         let placeholder =
           updatedParamsArray[index]?.value[subKey][key]?.placeholder;
 
         placeholder = handlePlaceholderChange(placeholder, value, key);
 
         updatedParamsArray[index].value[subKey][key].placeholder = placeholder;
+
+        return updatedParamsArray;
+      } else {
+        let placeholder =
+          updatedParamsArray[index]?.value[subKey].value[selectedIdx].fields[
+            key
+          ]?.placeholder;
+
+        placeholder = handlePlaceholderChange(placeholder, value, key);
+
+        updatedParamsArray[index].value[subKey].value[selectedIdx].fields[
+          key
+        ].placeholder = placeholder;
 
         return updatedParamsArray;
       }
@@ -606,10 +642,12 @@ const Builder = () => {
     param,
     index,
     subKey,
+    selectedIdx,
   }: {
     param: any;
     index: number;
     subKey?: string | number;
+    selectedIdx?: number;
   }) => {
     const setRef = (el: any, index: number, subKey: string | number = "") => {
       if (el) {
@@ -639,6 +677,7 @@ const Builder = () => {
                         index,
                         key,
                         subKey,
+                        selectedIdx,
                         e.target.selectionStart
                       );
                     }}
@@ -661,7 +700,13 @@ const Builder = () => {
                             typeof value.placeholder === "number"
                               ? parseInt(e.target.value) || 0
                               : e.target.value || "0x";
-                          handleObjectParamChange(val, index, key, subKey);
+                          handleObjectParamChange(
+                            val,
+                            index,
+                            key,
+                            subKey,
+                            selectedIdx
+                          );
                         }}
                         className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                       />
@@ -678,9 +723,10 @@ const Builder = () => {
                     value={param.value[param.index].name}
                     onChange={(e) => {
                       setParamsArray((prevParamsArray) => {
-                        const updatedParamsArray = [...prevParamsArray];
+                        const updatedParamsArray =
+                          structuredClone(prevParamsArray);
 
-                        if (!subKey) {
+                        if (subKey === undefined) {
                           updatedParamsArray[index].value.index =
                             e.target.selectedIndex;
                         } else {
@@ -702,60 +748,125 @@ const Builder = () => {
                       ))
                     }
                   </select>
-                  <input
-                    ref={(el) => setRef(el, index, subKey)}
-                    onChange={(e) => {
-                      setCurrentCursorPosition(e.target.selectionStart);
+                  {param.value[param.index].enum ? (
+                    <select
+                      onChange={(e) => {
+                        setParamsArray((prevParamsArray) => {
+                          const updatedParamsArray =
+                            structuredClone(prevParamsArray);
+                          let selectedIndex =
+                            updatedParamsArray[index].value.index;
+                          if (subKey === undefined) {
+                            let value: string | number =
+                              updatedParamsArray[index].value?.value[
+                                selectedIndex
+                              ].placeholder;
 
-                      setParamsArray((prevParamsArray) => {
-                        const updatedParamsArray = [...prevParamsArray];
-                        let selectedIndex =
-                          updatedParamsArray[index].value.index;
-                        if (!subKey) {
-                          let value: string | number =
-                            updatedParamsArray[index].value?.value[
+                            value =
+                              typeof value === "number"
+                                ? parseInt(e.target.value) || 0
+                                : e.target.value;
+
+                            updatedParamsArray[index].value.value[
                               selectedIndex
-                            ].placeholder;
+                            ].placeholder = value;
+                          } else {
+                            selectedIndex =
+                              updatedParamsArray[index]?.value[subKey]?.index;
+                            let value: string | number =
+                              updatedParamsArray[index]?.value[subKey]?.value[
+                                selectedIndex
+                              ].placeholder;
 
-                          value =
-                            typeof value === "number"
-                              ? parseInt(e.target.value) || 0
-                              : e.target.value;
+                            value =
+                              typeof value === "number"
+                                ? parseInt(e.target.value) || 0
+                                : e.target.value;
 
-                          updatedParamsArray[index].value.value[
-                            selectedIndex
-                          ].placeholder = value;
-                        } else {
-                          selectedIndex =
-                            updatedParamsArray[index]?.value[subKey]?.index;
-                          let value: string | number =
-                            updatedParamsArray[index]?.value[subKey]?.value[
+                            updatedParamsArray[index].value[subKey].value[
                               selectedIndex
-                            ].placeholder;
+                            ].placeholder = value;
+                          }
 
-                          value =
-                            typeof value === "number"
-                              ? parseInt(e.target.value) || 0
-                              : e.target.value;
+                          return updatedParamsArray;
+                        });
+                      }}
+                      className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                      value={param.value[param.index]?.placeholder}
+                    >
+                      {param.value[param.index].enum.map(
+                        (option: string, index: number) => (
+                          <option key={index} value={option}>
+                            {option.toUpperCase()}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  ) : param.value[param.index].fields ? (
+                    <FormatInputField
+                      param={param.value[param.index].fields}
+                      index={index}
+                      subKey={subKey}
+                      selectedIdx={param.index}
+                    />
+                  ) : (
+                    <input
+                      ref={(el) => setRef(el, index, subKey)}
+                      onChange={(e) => {
+                        setCurrentCursorPosition(e.target.selectionStart);
 
-                          updatedParamsArray[index].value[subKey].value[
-                            selectedIndex
-                          ].placeholder = value;
-                        }
+                        setParamsArray((prevParamsArray) => {
+                          const updatedParamsArray =
+                            structuredClone(prevParamsArray);
 
-                        return updatedParamsArray;
-                      });
+                          let selectedIndex =
+                            updatedParamsArray[index].value.index;
+                          if (subKey === undefined) {
+                            let value: string | number =
+                              updatedParamsArray[index].value?.value[
+                                selectedIndex
+                              ].placeholder;
 
-                      setFocusKey(createRefKey(index, subKey));
-                      setInputFocused(true);
-                    }}
-                    className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
-                    value={
-                      Array.isArray(param.value[param.index]?.placeholder)
-                        ? param.value[param.index]?.placeholder?.join(",")
-                        : param.value[param.index]?.placeholder
-                    }
-                  />
+                            value =
+                              typeof value === "number"
+                                ? parseInt(e.target.value) || 0
+                                : e.target.value;
+
+                            updatedParamsArray[index].value.value[
+                              selectedIndex
+                            ].placeholder = value;
+                          } else {
+                            selectedIndex =
+                              updatedParamsArray[index]?.value[subKey]?.index;
+                            let value: string | number =
+                              updatedParamsArray[index]?.value[subKey]?.value[
+                                selectedIndex
+                              ].placeholder;
+
+                            value =
+                              typeof value === "number"
+                                ? parseInt(e.target.value) || 0
+                                : e.target.value;
+
+                            updatedParamsArray[index].value[subKey].value[
+                              selectedIndex
+                            ].placeholder = value;
+                          }
+
+                          return updatedParamsArray;
+                        });
+
+                        setFocusKey(createRefKey(index, subKey));
+                        setInputFocused(true);
+                      }}
+                      className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
+                      value={
+                        Array.isArray(param.value[param.index]?.placeholder)
+                          ? param.value[param.index]?.placeholder?.join(",")
+                          : param.value[param.index]?.placeholder
+                      }
+                    />
+                  )}
                 </div>
               ) : (
                 <div>
@@ -915,12 +1026,13 @@ const Builder = () => {
                       <button
                         onClick={() => {
                           setParamsArray((prevParamsArray) => {
-                            const updatedParamsArray = JSON.parse(
-                              JSON.stringify(prevParamsArray)
+                            const updatedParamsArray =
+                              structuredClone(prevParamsArray);
+                            updatedParamsArray[index].value.push(
+                              structuredClone(
+                                updatedParamsArray[index].value[0]
+                              )
                             );
-                            updatedParamsArray[index].value.push({
-                              ...updatedParamsArray[index].value[0],
-                            });
                             return updatedParamsArray;
                           });
                         }}
