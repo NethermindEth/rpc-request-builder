@@ -1287,73 +1287,55 @@ async fn main() {
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: `use std::sync::Arc;
-
-use starknet::{
-  core::types::{
-    contract::SierraClass, FieldElement, BlockId, BlockTag, BroadcastedTransaction,
-    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3,
-    BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
-    BroadcastedDeployAccountTransaction, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
-    DataAvailabilityMode, ResourceBoundsMapping, ResourceBounds, SimulationFlag
-  },
-  macros::felt,
-  providers::{
-      jsonrpc::{HttpTransport, JsonRpcClient},
-      Provider, Url,
-  },
+    starknetRs: `use starknet::{
+    core::types::{
+        BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
+        BroadcastedTransaction, SimulationFlag,
+    },
+    macros::felt,
+    providers::{
+        jsonrpc::{HttpTransport, JsonRpcClient},
+        Provider, Url,
+    },
 };
 
 #[tokio::main]
 async fn main() {
-  // Sierra class artifact. Output of the "starknet-compile" command
-  let contract_artifact: SierraClass =
-    serde_json::from_reader(std::fs::File::open("/path/to/contract/artifact.json").unwrap())
-    .unwrap();
-  // Class hash of the compiled CASM class from the "starknet-sierra-compile" command
-  let compiled_class_hash =
-    FieldElement::from_hex_be("COMPILED_CASM_CLASS_HASH_IN_HEX_HERE").unwrap();
-  // We need to flatten the ABI into a string first
-  let flattened_class = contract_artifact.flatten().unwrap();
+    let provider = JsonRpcClient::new(HttpTransport::new(
+        Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+    ));
 
-  let provider = JsonRpcClient::new(HttpTransport::new(
-    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
-  ));
-
-  let result = provider
-    .simulate_transactions(
-      BlockId::Tag(BlockTag::Latest),
-      vec![
-        BroadcastedTransaction::Invoke(
-          BroadcastedInvokeTransaction::V1(
-            BroadcastedInvokeTransactionV1 {
-              sender_address: felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),
-              calldata: vec![],
-              max_fee: felt!("0x0"),
-              signature: vec![
-                felt!("0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98"),
-                felt!("0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af")
-              ],
-              nonce: felt!("0x0"),
-              is_query: true
-            }
-          )
+    let result = provider
+        .simulate_transactions(
+            BlockId::Tag(BlockTag::Latest),
+            vec![BroadcastedTransaction::Invoke(
+                BroadcastedInvokeTransaction::V1(BroadcastedInvokeTransactionV1 {
+                    sender_address: felt!(
+                        "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"
+                    ),
+                    calldata: vec![],
+                    max_fee: felt!("0x0"),
+                    signature: vec![
+                        felt!("0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98"),
+                        felt!("0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af"),
+                    ],
+                    nonce: felt!("0x0"),
+                    is_query: true,
+                }),
+            )],
+            vec![SimulationFlag::SkipValidate],
         )
-      ],
-      vec![
-        SimulationFlag::SkipValidate
-      ]
-    )
-    .await;
-  match result {
-    Ok(simulated_transactions) => {
-      println!("{simulated_transactions:#?}");
+        .await;
+    match result {
+        Ok(simulated_transactions) => {
+            println!("{simulated_transactions:#?}");
+        }
+        Err(err) => {
+            eprintln!("Error: {err}");
+        }
     }
-    Err(err) => {
-      eprintln!("Error: {err}");
-    }
-  }
 }
+`
 `,
   },
 ];
