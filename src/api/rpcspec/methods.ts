@@ -1102,7 +1102,15 @@ const TraceMethods = [
     console.log(transactionTrace);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+    transactionHash, _ := utils.HexToFelt("0x7641514f46a77013e80215cdce2e55d5aca49c13428b885c7ecb9d3ddb4ab11")
+    result, err := provider.TraceTransaction(context.Background(), transactionHash)
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("TransactionTrace:", result)
+  }
+    `,
     starknetRs: ``,
   },
 
@@ -1116,7 +1124,14 @@ const TraceMethods = [
     console.log(transactionTraces);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+    result, err := provider.TraceBlockTransactions(context.Background(), rpc.BlockID{Tag: "latest"})
+    if err != nil {
+      log.Fatal(err)
+    }
+    fmt.Println("TransactionTraces:", result)
+  }
+    `,
     starknetRs: ``,
   },
 
@@ -1135,7 +1150,15 @@ const TraceMethods = [
       block_id,
     },
     starknetJs: ``,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+    transactions := []rpc.Transaction{BROADCASTED_INVOKE_TXN}
+    simulationFlags := []rpc.SimulationFlag{{Type: "SKIP_VALIDATE"}}
+    result, err := provider.SimulateTransactions(context.Background(), rpc.BlockID{Tag: "latest"}, transactions, simulationFlags)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("SimulateTransaction:", result)
+    `,
     starknetRs: ``,
   },
 ];
