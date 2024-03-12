@@ -40,7 +40,8 @@ async fn main() {
   
   `;
 
-const STARKNET_GO_PREFIX = `
+const STARKNET_GO_PREFIX = `package main
+
 import (
 	"context"
 	"fmt"
@@ -100,6 +101,7 @@ const entry_point_selector = {
 const calldata = {
   placeholder: [],
   description: `The calldata to send with the function call (e.g. ["0x1", "0x2"])`,
+  type: "Array",
 };
 
 const class_hash = {
@@ -185,12 +187,14 @@ const paymaster_data = {
   placeholder: [],
   description:
     "Data needed to allow the paymaster to pay for the transaction in native tokens",
+  type: "Array",
 };
 
 const account_deployment_data = {
   placeholder: [],
   description:
     "Data needed to deploy the account contract from which this tx will be initiated",
+  type: "Array",
 };
 
 const nonce_data_availability_mode = {
@@ -218,6 +222,7 @@ const constructor_calldata = {
     "0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c",
   ],
   description: "The parameters passed to the constructor",
+  type: "Array",
 };
 
 const BROADCASTED_INVOKE_V1_TXN = {
@@ -263,6 +268,7 @@ const BROADCASTED_DECLARE_V2_TXN = {
   name: "DECLARE V2",
   fields: {
     sender_address: contract_address,
+    compiled_class_hash: class_hash,
     max_fee,
     signature: signature_declare,
     nonce,
@@ -274,6 +280,7 @@ const BROADCASTED_DECLARE_V3_TXN = {
   name: "DECLARE V3",
   fields: {
     sender_address: contract_address,
+    compiled_class_hash: class_hash,
     signature: signature_declare,
     nonce,
     resource_bounds_l1_gas_max_amount,
@@ -360,6 +367,7 @@ const ReadMethods = [
 });
     `,
     starknetGo: `package main
+
 import (
   "context"
   "fmt"
@@ -423,7 +431,12 @@ async fn main() {
   console.log(block);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockWithTxHashes(context.Background(), rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockWithTxHashes:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag},
       providers::{
@@ -464,7 +477,12 @@ async fn main() {
   console.log(block);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockWithTxs(context.Background(), rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockWithTxs:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag},
       providers::{
@@ -504,7 +522,12 @@ async fn main() {
     console.log(stateUpdate);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.StateUpdate(context.Background(), rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("StateUpdate:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag,MaybePendingStateUpdate},
       providers::{
@@ -547,7 +570,14 @@ async fn main() {
     console.log(storage);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}contractAddress, _ := utils.HexToFelt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49")
+  key, _ := utils.HexToFelt("0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e")
+  result, err := provider.StorageAt(context.Background(), contractAddress, key, rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("StorageAt:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId,BlockTag},
       macros::felt,
@@ -918,6 +948,7 @@ async fn main() {
         payload: {
           placeholder: [],
           description: "The payload of the message",
+          type: "Array",
         },
       },
       block_id,
@@ -935,7 +966,12 @@ async fn main() {
     console.log(blockNumber);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockNumber(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockNumber:", result)
+}`,
     starknetRs: `use starknet::providers::{
       jsonrpc::{HttpTransport, JsonRpcClient},
       Provider, Url,
@@ -969,7 +1005,12 @@ async fn main() {
     console.log(blockHashAndNumber);
     });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockHashAndNumber(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockHashAndNumber:", result)
+}`,
     starknetRs: `use starknet::providers::{
       jsonrpc::{HttpTransport, JsonRpcClient},
       Provider, Url,
@@ -1409,22 +1450,33 @@ async fn main() {
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: `use std::sync::Arc;
-    
-use starknet::{
-    core::types::{
-        BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
-        BroadcastedTransaction, SimulationFlag,
-    },
-    macros::felt,
-    providers::{
-        jsonrpc::{HttpTransport, JsonRpcClient},
-        Provider, Url,
-    },
-};
+    starknetRs: `use starknet::{
+      core::types::{
+          contract::SierraClass, BlockId, BlockTag, BroadcastedDeclareTransaction,
+          BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
+          BroadcastedDeployAccountTransaction, BroadcastedDeployAccountTransactionV1,
+          BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransaction,
+          BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, BroadcastedTransaction,
+          DataAvailabilityMode, FieldElement, ResourceBounds, ResourceBoundsMapping, SimulationFlag,
+      },
+      macros::felt,
+      providers::{
+          jsonrpc::{HttpTransport, JsonRpcClient},
+          Provider, Url,
+      },
+  };
+  use std::sync::Arc;
+  
+  #[tokio::main]
+  async fn main() {
+    // Sierra class artifact. Output of the "starknet-compile" command
+    let contract_artifact: SierraClass =
+      serde_json::from_reader(std::fs::File::open("/path/to/contract/artifact.json").unwrap())
+          .unwrap();
 
-#[tokio::main]
-async fn main() {
+      // We need to flatten the ABI into a string first
+    let flattened_class = contract_artifact.flatten().unwrap();
+
     let provider = JsonRpcClient::new(HttpTransport::new(
         Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
     ));
