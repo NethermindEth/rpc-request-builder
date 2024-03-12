@@ -903,41 +903,7 @@ async fn main() {
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: `use starknet::{
-  core::types::{FunctionCall, BlockId, BlockTag},
-  macros::felt,
-  providers::{
-    jsonrpc::{HttpTransport, JsonRpcClient},
-    Provider, Url,
-  },
-};
-
-#[tokio::main]
-async fn main() {
-  let provider = JsonRpcClient::new(HttpTransport::new(
-    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
-  ));
-
-  let result = provider
-    .call(
-      FunctionCall {
-        contract_address: felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),
-        entry_point_selector: felt!("0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"),
-        calldata: vec![],
-      },
-      BlockId::Tag(BlockTag::Latest),
-    )
-    .await;
-  match result {
-    Ok(call_result) => {
-      println!("{call_result:#?}");
-    }
-    Err(err) => {
-      eprintln!("Error: {err}");
-    }
-  }
-}
-`,
+    starknetRs: ``,
   },
 
   // Estimate the fee for StarkNet transactions
@@ -1335,7 +1301,6 @@ async fn main() {
         }
     }
 }
-`
 `,
   },
 ];
