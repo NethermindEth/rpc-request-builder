@@ -145,149 +145,157 @@ const formatResourceBounds = ({
 
 const formatBroadcastedInvokeTransactionV1 = (
   transaction: BroadcastedInvokeTransactionV1
-) => `BroadcastedInvokeTransaction::V1(
-          BroadcastedInvokeTransactionV1 {
-            sender_address: felt!("${transaction.sender_address}"),
-            calldata: vec![${transaction.calldata
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            max_fee: felt!("${transaction.max_fee}"),
-            signature: vec![${transaction.signature
-              .map((sig) => `felt!("${sig}")`)
-              .join(", ")}],
-            nonce: felt!("${transaction.nonce}"),
-            is_query: ${transaction.is_query}
-          }
-        )`;
+) => `BroadcastedTransaction::Invoke(
+          BroadcastedInvokeTransaction::V1(
+            BroadcastedInvokeTransactionV1 {
+              sender_address: felt!("${transaction.sender_address}"),
+              calldata: vec![${transaction.calldata
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              max_fee: felt!("${transaction.max_fee}"),
+              signature: vec![${transaction.signature
+                .map((sig) => `felt!("${sig}")`)
+                .join(", ")}],
+              nonce: felt!("${transaction.nonce}"),
+              is_query: ${transaction.is_query}
+            }
+          ),
+      )`;
 
 const formatBroadcastedInvokeTransactionV3 = (
   transaction: BroadcastedInvokeTransactionV3
-) => `BroadcastedInvokeTransaction::V3(
-          BroadcastedInvokeTransactionV3 {
-            sender_address: felt!("${transaction.sender_address}"),
-            calldata: vec![${transaction.calldata
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            signature: vec![${transaction.signature
-              .map((sig) => `felt!("${sig}")`)
-              .join(", ")}],
-            nonce: felt!("${transaction.nonce}"),
-            resource_bounds: ${formatResourceBounds(transaction)},
-            tip: ${formatStarknetRsParamsUint(transaction.tip, "u64")},
-            paymaster_data: vec![${transaction.paymaster_data
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            account_deployment_data: vec![${transaction.account_deployment_data
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            nonce_data_availability_mode: DataAvailabilityMode::${
-              transaction.nonce_data_availability_mode
-            },
-            fee_data_availability_mode: DataAvailabilityMode::${
-              transaction.fee_data_availability_mode
-            },
-            is_query: ${transaction.is_query}
-          }
-        )`;
+) => `BroadcastedTransaction::Invoke(
+          BroadcastedInvokeTransaction::V3(
+            BroadcastedInvokeTransactionV3 {
+              sender_address: felt!("${transaction.sender_address}"),
+              calldata: vec![${transaction.calldata
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              signature: vec![${transaction.signature
+                .map((sig) => `felt!("${sig}")`)
+                .join(", ")}],
+              nonce: felt!("${transaction.nonce}"),
+              resource_bounds: ${formatResourceBounds(transaction)},
+              tip: ${formatStarknetRsParamsUint(transaction.tip, "u64")},
+              paymaster_data: vec![${transaction.paymaster_data
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              account_deployment_data: vec![${transaction.account_deployment_data
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              nonce_data_availability_mode: DataAvailabilityMode::${
+                transaction.nonce_data_availability_mode
+              },
+              fee_data_availability_mode: DataAvailabilityMode::${
+                transaction.fee_data_availability_mode
+              },
+              is_query: ${transaction.is_query}
+            }
+          ),
+      )`;
 
 const formatBroadcastedDeclareTransactionV2 = (
   transaction: BroadcastedDeclareTransactionV2
-) => `BroadcastedDeclareTransaction::V2(
-          BroadcastedDeclareTransactionV2 {
-            sender_address: felt!("${transaction.sender_address}"),
-            compiled_class_hash,
-            max_fee: felt!("${transaction.max_fee}"),
-            signature: vec![${transaction.signature
-              .map((sig) => `felt!("${sig}")`)
-              .join(", ")}],
-            nonce: felt!("${transaction.nonce}"),
-            contract_class: Arc::new(flattened_class),
-            is_query: ${transaction.is_query}
-          }
-        )`;
+) => `BroadcastedTransaction::Declare(
+          BroadcastedDeclareTransaction::V2(
+            BroadcastedDeclareTransactionV2 {
+              sender_address: felt!("${transaction.sender_address}"),
+              compiled_class_hash: felt!("${transaction.compiled_class_hash}"),
+              max_fee: felt!("${transaction.max_fee}"),
+              signature: vec![${transaction.signature
+                .map((sig) => `felt!("${sig}")`)
+                .join(", ")}],
+              nonce: felt!("${transaction.nonce}"),
+              contract_class: Arc::new(flattened_class),
+              is_query: ${transaction.is_query}
+            }
+          ),
+      )`;
 
 const formatBroadcastedDeclareTransactionV3 = (
   transaction: BroadcastedDeclareTransactionV3
-) => `BroadcastedDeclareTransaction::V3(
-          BroadcastedDeclareTransactionV3 {
-            sender_address: felt!("${transaction.sender_address}"),
-            compiled_class_hash,
-            signature: vec![${transaction.signature
-              .map((sig) => `felt!("${sig}")`)
-              .join(", ")}],
-            nonce: felt!("${transaction.nonce}"),
-            contract_class: Arc::new(flattened_class),
-            resource_bounds: resource_bounds: ${formatResourceBounds(
-              transaction
-            )},
-            tip: ${transaction.tip},
-            paymaster_data: vec![${transaction.paymaster_data
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            account_deployment_data: vec![${transaction.account_deployment_data
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            nonce_data_availability_mode: DataAvailabilityMode::${
-              transaction.nonce_data_availability_mode
-            },
-            fee_data_availability_mode: DataAvailabilityMode::${
-              transaction.fee_data_availability_mode
-            },
-            is_query: ${transaction.is_query}
-          }
-        )`;
+) => `BroadcastedTransaction::Declare(
+          BroadcastedDeclareTransaction::V3(
+            BroadcastedDeclareTransactionV3 {
+              sender_address: felt!("${transaction.sender_address}"),
+              compiled_class_hash: felt!("${transaction.compiled_class_hash}"),
+              signature: vec![${transaction.signature
+                .map((sig) => `felt!("${sig}")`)
+                .join(", ")}],
+              nonce: felt!("${transaction.nonce}"),
+              contract_class: Arc::new(flattened_class),
+              resource_bounds: ${formatResourceBounds(transaction)},
+              tip: ${transaction.tip},
+              paymaster_data: vec![${transaction.paymaster_data
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              account_deployment_data: vec![${transaction.account_deployment_data
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              nonce_data_availability_mode: DataAvailabilityMode::${
+                transaction.nonce_data_availability_mode
+              },
+              fee_data_availability_mode: DataAvailabilityMode::${
+                transaction.fee_data_availability_mode
+              },
+              is_query: ${transaction.is_query}
+            }
+          ),
+      )`;
 
 const formatBroadcastedDeployAccountTransactionV1 = (
   transaction: BroadcastedDeployAccountTransactionV1
-) => `BroadcastedDeployAccountTransaction::V1(
-          BroadcastedDeployAccountTransactionV1 {
-            max_fee: felt!("${transaction.max_fee}"),
-            signature: vec![${transaction.signature
-              .map((sig) => `felt!("${sig}")`)
-              .join(", ")}],
-            nonce: felt!("${transaction.nonce}"),
-            contract_address_salt: felt!("${
-              transaction.contract_address_salt
-            }"),
-            constructor_calldata: vec![${transaction.constructor_calldata
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            class_hash: felt!("${transaction.class_hash}"),
-            is_query: ${transaction.is_query}
-          }
+) => `BroadcastedTransaction::DeployAccount(
+          BroadcastedDeployAccountTransaction::V1(
+            BroadcastedDeployAccountTransactionV1 {
+              max_fee: felt!("${transaction.max_fee}"),
+              signature: vec![${transaction.signature
+                .map((sig) => `felt!("${sig}")`)
+                .join(", ")}],
+              nonce: felt!("${transaction.nonce}"),
+              contract_address_salt: felt!("${
+                transaction.contract_address_salt
+              }"),
+              constructor_calldata: vec![${transaction.constructor_calldata
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              class_hash: felt!("${transaction.class_hash}"),
+              is_query: ${transaction.is_query}
+            }
+          ),
         )`;
 
 const formatBroadcastedDeployAccountTransactionV3 = (
   transaction: BroadcastedDeployAccountTransactionV3
-) => `BroadcastedDeployAccountTransaction::V3(
-          BroadcastedDeployAccountTransactionV3 {
-            signature: vec![${transaction.signature
-              .map((sig) => `felt!("${sig}")`)
-              .join(", ")}],
-            nonce: felt!("${transaction.nonce}"),
-            contract_address_salt: felt!("${
-              transaction.contract_address_salt
-            }"),
-            constructor_calldata: vec![${transaction.constructor_calldata
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            class_hash: felt!("${transaction.class_hash}"),
-            resource_bounds: resource_bounds: ${formatResourceBounds(
-              transaction
-            )},
-            tip: ${transaction.tip},
-            paymaster_data: vec![${transaction.paymaster_data
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            nonce_data_availability_mode: DataAvailabilityMode::${
-              transaction.nonce_data_availability_mode
-            },
-            fee_data_availability_mode: DataAvailabilityMode::${
-              transaction.fee_data_availability_mode
-            },
-            is_query: ${transaction.is_query}
-          }
-        )`;
+) => `BroadcastedTransaction::DeployAccount(
+          BroadcastedDeployAccountTransaction::V3(
+            BroadcastedDeployAccountTransactionV3 {
+              signature: vec![${transaction.signature
+                .map((sig) => `felt!("${sig}")`)
+                .join(", ")}],
+              nonce: felt!("${transaction.nonce}"),
+              contract_address_salt: felt!("${
+                transaction.contract_address_salt
+              }"),
+              constructor_calldata: vec![${transaction.constructor_calldata
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              class_hash: felt!("${transaction.class_hash}"),
+              resource_bounds: ${formatResourceBounds(transaction)},
+              tip: ${transaction.tip},
+              paymaster_data: vec![${transaction.paymaster_data
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              nonce_data_availability_mode: DataAvailabilityMode::${
+                transaction.nonce_data_availability_mode
+              },
+              fee_data_availability_mode: DataAvailabilityMode::${
+                transaction.fee_data_availability_mode
+              },
+              is_query: ${transaction.is_query}
+            }
+          ),
+      )`;
 
 export const formatStarknetRsParamsInvokeTransaction = (
   transaction: BroadcastedInvokeTransactionV1 | BroadcastedInvokeTransactionV3
@@ -367,9 +375,7 @@ export const formatStarknetRsParamsTransactions = (
     })
     .join(", ");
   return `
-      vec![
-        ${transactionsFormatted}
-      ]`;
+      vec![${transactionsFormatted}]`;
 };
 
 export const formatStarknetRsParamsSimulationFlags = (
@@ -385,7 +391,7 @@ export const formatStarknetRsParamsSimulationFlags = (
           return "SimulationFlag::SkipFeeCharge";
         }
         default: {
-          return "INVALID_SIMULATION_FLAG";
+          return;
         }
       }
     })
