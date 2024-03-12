@@ -40,7 +40,8 @@ async fn main() {
   
   `;
 
-const STARKNET_GO_PREFIX = `
+const STARKNET_GO_PREFIX = `package main
+
 import (
 	"context"
 	"fmt"
@@ -385,6 +386,7 @@ const ReadMethods = [
 });
     `,
     starknetGo: `package main
+
 import (
   "context"
   "fmt"
