@@ -631,6 +631,8 @@ const Builder = () => {
             placeholderType
           );
 
+          updatedParamsArray[index].value[key].placeholder = placeholder;
+
           return updatedParamsArray;
         } else {
           let placeholder =
