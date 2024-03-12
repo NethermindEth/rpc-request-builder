@@ -100,6 +100,7 @@ const entry_point_selector = {
 const calldata = {
   placeholder: [],
   description: `The calldata to send with the function call (e.g. ["0x1", "0x2"])`,
+  type: "Array",
 };
 
 const class_hash = {
@@ -171,12 +172,14 @@ const paymaster_data = {
   placeholder: [],
   description:
     "Data needed to allow the paymaster to pay for the transaction in native tokens",
+  type: "Array",
 };
 
 const account_deployment_data = {
   placeholder: [],
   description:
     "Data needed to deploy the account contract from which this tx will be initiated",
+  type: "Array",
 };
 
 const nonce_data_availability_mode = {
@@ -199,6 +202,7 @@ const contract_address_salt = {
 const constructor_calldata = {
   placeholder: [],
   description: "The parameters passed to the constructor",
+  type: "Array",
 };
 
 const INVOKE_TXN_V0 = {
@@ -268,6 +272,7 @@ const BROADCASTED_TXN = {
       name: "DECLARE_V2",
       fields: {
         sender_address: contract_address,
+        compiled_class_hash: class_hash,
         max_fee,
         signature,
         nonce,
@@ -278,6 +283,7 @@ const BROADCASTED_TXN = {
       name: "DECLARE_V3",
       fields: {
         sender_address: contract_address,
+        compiled_class_hash: class_hash,
         signature,
         nonce,
         resource_bounds_l1_gas_max_amount,
@@ -347,6 +353,7 @@ const DEPLOY_ACCOUNT_TXN_V1 = {
       "0x0",
     ],
     description: "A transaction signature",
+    type: "Array",
   },
   nonce,
   contract_address_salt: {
@@ -936,6 +943,7 @@ async fn main() {
         payload: {
           placeholder: [],
           description: "The payload of the message",
+          type: "Array",
         },
       },
       block_id,
@@ -1330,19 +1338,32 @@ async fn main() {
     starknetJs: ``,
     starknetGo: ``,
     starknetRs: `use starknet::{
-    core::types::{
-        BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
-        BroadcastedTransaction, SimulationFlag,
-    },
-    macros::felt,
-    providers::{
-        jsonrpc::{HttpTransport, JsonRpcClient},
-        Provider, Url,
-    },
-};
+      core::types::{
+          contract::SierraClass, BlockId, BlockTag, BroadcastedDeclareTransaction,
+          BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
+          BroadcastedDeployAccountTransaction, BroadcastedDeployAccountTransactionV1,
+          BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransaction,
+          BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, BroadcastedTransaction,
+          DataAvailabilityMode, FieldElement, ResourceBounds, ResourceBoundsMapping, SimulationFlag,
+      },
+      macros::felt,
+      providers::{
+          jsonrpc::{HttpTransport, JsonRpcClient},
+          Provider, Url,
+      },
+  };
+  use std::sync::Arc;
+  
+  #[tokio::main]
+  async fn main() {
+    // Sierra class artifact. Output of the "starknet-compile" command
+    let contract_artifact: SierraClass =
+      serde_json::from_reader(std::fs::File::open("/path/to/contract/artifact.json").unwrap())
+          .unwrap();
 
-#[tokio::main]
-async fn main() {
+      // We need to flatten the ABI into a string first
+    let flattened_class = contract_artifact.flatten().unwrap();
+
     let provider = JsonRpcClient::new(HttpTransport::new(
         Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
     ));

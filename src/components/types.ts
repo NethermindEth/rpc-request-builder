@@ -35,6 +35,7 @@ export type BroadcastedInvokeTransactionV3 = {
 export type BroadcastedDeclareTransactionV2 = {
   type: "DECLARE_V2";
   sender_address: string;
+  compiled_class_hash: string;
   max_fee: string;
   signature: string[];
   nonce: string;
@@ -44,6 +45,7 @@ export type BroadcastedDeclareTransactionV2 = {
 export type BroadcastedDeclareTransactionV3 = {
   type: "DECLARE_V3";
   sender_address: string;
+  compiled_class_hash: string;
   signature: string[];
   nonce: string;
   resource_bounds_l1_gas_max_amount: string;
