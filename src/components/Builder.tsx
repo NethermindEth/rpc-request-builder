@@ -27,10 +27,9 @@ import {
   formatStarknetRsParamsInvokeTransaction,
   formatStarknetRsParamsDeclareTransaction,
   formatStarknetRsParamsDeployAccountTransaction,
-  formatStarknetRsParamsTransactions,
-  formatStarknetRsParamsSimulationFlags,
   formatStarknetRsParamsMsgFromL1,
   formatStarknetRsParamsTransactions,
+  cleanTransaction,
   formatStarknetRsParamsSimulationFlags,
   toCamelCase,
 } from "./utils";
@@ -422,7 +421,10 @@ const Builder = () => {
               } else if (key === "request") {
                 if (Array.isArray(value)) {
                   return formatStarknetRsParamsTransactions(
-                    value.map((t: any) => ({ ...t, is_query: true }))
+                    value.map((t: any) => ({
+                      ...cleanTransaction(t),
+                      is_query: true,
+                    }))
                   );
                 }
                 return formatStarknetRsParamsFunctionCall(value);
@@ -430,22 +432,25 @@ const Builder = () => {
                 return formatStarknetRsParamsMsgFromL1(value);
               } else if (key === "invoke_transaction") {
                 return formatStarknetRsParamsInvokeTransaction({
-                  ...value,
+                  ...cleanTransaction(value),
                   is_query: false,
                 });
               } else if (key === "declare_transaction") {
                 return formatStarknetRsParamsDeclareTransaction({
-                  ...value,
+                  ...cleanTransaction(value),
                   is_query: false,
                 });
               } else if (key === "deploy_account_transaction") {
                 return formatStarknetRsParamsDeployAccountTransaction({
-                  ...value,
+                  ...cleanTransaction(value),
                   is_query: false,
                 });
               } else if (key === "transactions") {
                 return formatStarknetRsParamsTransactions(
-                  value.map((t: any) => ({ ...t, is_query: true }))
+                  value.map((t: any) => ({
+                    ...cleanTransaction(t),
+                    is_query: true,
+                  }))
                 );
               } else if (key === "simulation_flags") {
                 return formatStarknetRsParamsSimulationFlags(
@@ -642,6 +647,8 @@ const Builder = () => {
             value,
             placeholderType
           );
+
+          updatedParamsArray[index].value[key].placeholder = placeholder;
 
           return updatedParamsArray;
         } else {

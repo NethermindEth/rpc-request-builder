@@ -1457,7 +1457,7 @@ async fn main() {
       BroadcastedDeclareTransaction::V2(
         BroadcastedDeclareTransactionV2 {
           sender_address: felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),
-          compiled_class_hash,
+          compiled_class_hash: felt!("0x3131fa018d520a037686ce3efddeab8f28895662f019ca3ca18a626650f7d1e"),
           max_fee: felt!("0x0"),
           signature: vec![
             felt!("0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98"),
