@@ -448,7 +448,12 @@ async fn main() {
   console.log(block);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockWithTxHashes(context.Background(), rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockWithTxHashes:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag},
       providers::{
@@ -489,7 +494,12 @@ async fn main() {
   console.log(block);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockWithTxs(context.Background(), rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockWithTxs:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag},
       providers::{
@@ -529,7 +539,12 @@ async fn main() {
     console.log(stateUpdate);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.StateUpdate(context.Background(), rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("StateUpdate:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId, BlockTag,MaybePendingStateUpdate},
       providers::{
@@ -572,7 +587,14 @@ async fn main() {
     console.log(storage);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}contractAddress, _ := utils.HexToFelt("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49")
+  key, _ := utils.HexToFelt("0x1001e85047571380eed1d7e1cc5a9af6a707b3d65789bb1702c7d680e5e87e")
+  result, err := provider.StorageAt(context.Background(), contractAddress, key, rpc.BlockID{Tag: "latest"})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("StorageAt:", result)
+}`,
     starknetRs: `use starknet::{
       core::types::{BlockId,BlockTag},
       macros::felt,
@@ -961,7 +983,12 @@ async fn main() {
     console.log(blockNumber);
 });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockNumber(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockNumber:", result)
+}`,
     starknetRs: `use starknet::providers::{
       jsonrpc::{HttpTransport, JsonRpcClient},
       Provider, Url,
@@ -995,7 +1022,12 @@ async fn main() {
     console.log(blockHashAndNumber);
     });
     `,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}result, err := provider.BlockHashAndNumber(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("BlockHashAndNumber:", result)
+}`,
     starknetRs: `use starknet::providers::{
       jsonrpc::{HttpTransport, JsonRpcClient},
       Provider, Url,
