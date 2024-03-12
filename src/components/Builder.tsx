@@ -431,6 +431,23 @@ const Builder = () => {
                 return formatStarknetRsParamsTransactions(
                   value.map((t: any) => ({ ...t, is_query: true }))
                 );
+              } else if (key === "transactions") {
+                const formattedValue = value.map((t: any) => {
+                  const formattedTransaction = { ...t, is_query: true };
+                  for (const prop of [
+                    "calldata",
+                    "signature",
+                    "paymaster_data",
+                    "account_deployment_data",
+                    "constructor_calldata",
+                  ]) {
+                    formattedTransaction[prop] = Array.isArray(t[prop])
+                      ? t[prop]
+                      : [];
+                  }
+                  return formattedTransaction;
+                });
+                return formatStarknetRsParamsTransactions(formattedValue);
               } else if (key === "simulation_flags") {
                 return formatStarknetRsParamsSimulationFlags(value);
               } else if (typeof value === "object" && !Array.isArray(value)) {
@@ -723,7 +740,13 @@ const Builder = () => {
                             typeof value.placeholder === "number"
                               ? parseInt(e.target.value) || 0
                               : e.target.value || "0x";
-                          handleObjectParamChange(val, index, key, subKey, selectedIdx);
+                          handleObjectParamChange(
+                            val,
+                            index,
+                            key,
+                            subKey,
+                            selectedIdx
+                          );
                         }}
                         className="bg-gray-bg border border-[#3e3e43] rounded-sm p-2 w-full mt-2"
                       />
@@ -846,7 +869,7 @@ const Builder = () => {
 
                             value =
                               typeof value === "number"
-                                ? parseInt(e.target.value)
+                                ? parseInt(e.target.value) || 0
                                 : e.target.value;
 
                             updatedParamsArray[index].value.value[
@@ -862,7 +885,7 @@ const Builder = () => {
 
                             value =
                               typeof value === "number"
-                                ? parseInt(e.target.value)
+                                ? parseInt(e.target.value) || 0
                                 : e.target.value;
 
                             updatedParamsArray[index].value[subKey].value[
