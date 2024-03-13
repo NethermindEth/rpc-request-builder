@@ -23,7 +23,11 @@ import {
   extractNodeUrl,
   formatRawParams,
   formatStarknetRsParamsBlockId,
+  formatStarknetRsParamsInvokeTransaction,
+  formatStarknetRsParamsDeclareTransaction,
+  formatStarknetRsParamsDeployAccountTransaction,
   formatStarknetRsParamsTransactions,
+  cleanTransaction,
   formatStarknetRsParamsSimulationFlags,
   toCamelCase,
 } from "./utils";
@@ -220,13 +224,14 @@ const Builder = () => {
         if (selectedOption.enum) {
           return placeholder;
         } else if (selectedOption.fields) {
+          const [type, version] = placeholder.split(" ");
           return Object.entries(selectedOption.fields).reduce(
             (acc: ParamsObject, [key, value]) => {
               const { placeholder } = value as { placeholder: string };
               acc[key] = placeholder;
               return acc;
             },
-            { type: placeholder }
+            { type, version: `0x${version.charAt(1)}` }
           );
         } else {
           return { [selectedOption.name]: placeholder };
@@ -408,23 +413,28 @@ const Builder = () => {
             ([key, value]) => {
               if (key === "block_id") {
                 return formatStarknetRsParamsBlockId(value);
-              } else if (key === "transactions") {
-                const formattedValue = value.map((t: any) => {
-                  const formattedTransaction = { ...t, is_query: true };
-                  for (const prop of [
-                    "calldata",
-                    "signature",
-                    "paymaster_data",
-                    "account_deployment_data",
-                    "constructor_calldata",
-                  ]) {
-                    formattedTransaction[prop] = Array.isArray(t[prop])
-                      ? t[prop]
-                      : [];
-                  }
-                  return formattedTransaction;
+              } else if (key === "invoke_transaction") {
+                return formatStarknetRsParamsInvokeTransaction({
+                  ...cleanTransaction(value),
+                  is_query: false,
                 });
-                return formatStarknetRsParamsTransactions(formattedValue);
+              } else if (key === "declare_transaction") {
+                return formatStarknetRsParamsDeclareTransaction({
+                  ...cleanTransaction(value),
+                  is_query: false,
+                });
+              } else if (key === "deploy_account_transaction") {
+                return formatStarknetRsParamsDeployAccountTransaction({
+                  ...cleanTransaction(value),
+                  is_query: false,
+                });
+              } else if (key === "transactions") {
+                return formatStarknetRsParamsTransactions(
+                  value.map((t: any) => ({
+                    ...cleanTransaction(t),
+                    is_query: true,
+                  }))
+                );
               } else if (key === "simulation_flags") {
                 return formatStarknetRsParamsSimulationFlags(value);
               } else if (typeof value === "object" && !Array.isArray(value)) {
@@ -608,54 +618,78 @@ const Builder = () => {
       const updatedParamsArray = structuredClone(prevParamsArray);
 
       if (subKey === undefined) {
-        let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
-        let placeholderType = updatedParamsArray[index]?.value[key]?.type;
+        if (selectedIdx === undefined) {
+          let placeholder = updatedParamsArray[index]?.value[key]?.placeholder;
+          let placeholderType = updatedParamsArray[index]?.value[key]?.type;
 
-        placeholder = handlePlaceholderChange(
-          placeholder,
-          value,
-          placeholderType
-        );
+          placeholder = handlePlaceholderChange(
+            placeholder,
+            value,
+            placeholderType
+          );
 
-        updatedParamsArray[index].value[key].placeholder = placeholder;
+          updatedParamsArray[index].value[key].placeholder = placeholder;
 
-        return updatedParamsArray;
-      } else if (selectedIdx === undefined) {
-        let placeholder =
-          updatedParamsArray[index]?.value[subKey][key]?.placeholder;
-        let placeholderType =
-          updatedParamsArray[index]?.value[subKey][key]?.type;
+          return updatedParamsArray;
+        } else {
+          let placeholder =
+            updatedParamsArray[index]?.value.value[selectedIdx].fields[key]
+              ?.placeholder;
+          let placeholderType =
+            updatedParamsArray[index]?.value.value[selectedIdx].fields[key]
+              ?.type;
 
-        placeholder = handlePlaceholderChange(
-          placeholder,
-          value,
-          placeholderType
-        );
+          placeholder = handlePlaceholderChange(
+            placeholder,
+            value,
+            placeholderType
+          );
 
-        updatedParamsArray[index].value[subKey][key].placeholder = placeholder;
+          updatedParamsArray[index].value.value[selectedIdx].fields[
+            key
+          ].placeholder = placeholder;
 
-        return updatedParamsArray;
+          return updatedParamsArray;
+        }
       } else {
-        let placeholder =
-          updatedParamsArray[index]?.value[subKey].value[selectedIdx].fields[
+        if (selectedIdx === undefined) {
+          let placeholder =
+            updatedParamsArray[index]?.value[subKey][key]?.placeholder;
+          let placeholderType =
+            updatedParamsArray[index]?.value[subKey][key]?.type;
+
+          placeholder = handlePlaceholderChange(
+            placeholder,
+            value,
+            placeholderType
+          );
+
+          updatedParamsArray[index].value[subKey][key].placeholder =
+            placeholder;
+
+          return updatedParamsArray;
+        } else {
+          let placeholder =
+            updatedParamsArray[index]?.value[subKey].value[selectedIdx].fields[
+              key
+            ]?.placeholder;
+          let placeholderType =
+            updatedParamsArray[index]?.value[subKey].value[selectedIdx].fields[
+              key
+            ]?.type;
+
+          placeholder = handlePlaceholderChange(
+            placeholder,
+            value,
+            placeholderType
+          );
+
+          updatedParamsArray[index].value[subKey].value[selectedIdx].fields[
             key
-          ]?.placeholder;
-        let placeholderType =
-          updatedParamsArray[index]?.value[subKey].value[selectedIdx].fields[
-            key
-          ]?.type;
+          ].placeholder = placeholder;
 
-        placeholder = handlePlaceholderChange(
-          placeholder,
-          value,
-          placeholderType
-        );
-
-        updatedParamsArray[index].value[subKey].value[selectedIdx].fields[
-          key
-        ].placeholder = placeholder;
-
-        return updatedParamsArray;
+          return updatedParamsArray;
+        }
       }
     });
 

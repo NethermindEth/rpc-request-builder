@@ -116,27 +116,41 @@ const functionCall = {
   calldata,
 };
 
-const version0 = {
-  placeholder: "0x0",
-  description: "The version of the transaction",
-};
-
-const version1 = {
-  placeholder: "0x1",
-  description: "The version of the transaction",
-};
-
 const max_fee = {
   placeholder: "0x0",
   description: "The maximum fee the sender is willing to pay",
 };
 
-const signature = {
+const signature_invoke = {
   placeholder: [
     "0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98",
     "0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af",
   ],
   description: `A transaction signature (e.g. ["0x1", "0x2"])`,
+};
+
+const signature_declare = {
+  placeholder: [
+    "0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98",
+    "0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af",
+  ],
+  description: "A transaction signature",
+};
+
+const signature_deploy_account = {
+  placeholder: [
+    "0xd96bc7affb5648b601ddb49e9fd23f6ebfe59375e2ce5dd06b7db638d21b71",
+    "0x6582c1512c8515254a52deb5fef1320d4f5dd0cb8352b260a4e7a90c61510ba",
+    "0x5dec330eebf36c8672b60db4a718d44762d3ae6d1333e553197acb47ee5a062",
+    "0x0",
+    "0x0",
+    "0x0",
+    "0x0",
+    "0x0",
+    "0x0",
+    "0x0",
+  ],
+  description: "A transaction signature",
 };
 
 const nonce = {
@@ -201,180 +215,147 @@ const contract_address_salt = {
 };
 
 const constructor_calldata = {
-  placeholder: [],
+  placeholder: [
+    "0x5aa23d5bb71ddaa783da7ea79d405315bafa7cf0387a74f4593578c3e9e6570",
+    "0x2dd76e7ad84dbed81c314ffe5e7a7cacfb8f4836f01af4e913f275f89a3de1a",
+    "0x1",
+    "0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c",
+  ],
   description: "The parameters passed to the constructor",
   type: "Array",
 };
 
-const INVOKE_TXN_V0 = {
-  type: {
-    placeholder: "INVOKE",
-    description: "The type of the transaction",
+const BROADCASTED_INVOKE_V1_TXN = {
+  name: "INVOKE V1",
+  fields: {
+    sender_address: contract_address,
+    calldata,
+    max_fee,
+    signature: signature_invoke,
+    nonce,
   },
-  max_fee,
-  version: version0,
-  signature,
-  contract_address,
-  entry_point_selector,
-  calldata,
+  placeholder: "INVOKE V1",
 };
 
-const INVOKE_TXN_V1 = {
-  type: {
-    placeholder: "INVOKE",
-    description: "The type of the transaction",
+const BROADCASTED_INVOKE_V3_TXN = {
+  name: "INVOKE V3",
+  fields: {
+    sender_address: contract_address,
+    calldata,
+    signature: signature_invoke,
+    nonce,
+    resource_bounds_l1_gas_max_amount,
+    resource_bounds_l1_gas_max_price_per_unit,
+    resource_bounds_l2_gas_max_amount,
+    resource_bounds_l2_gas_max_price_per_unit,
+    tip,
+    paymaster_data,
+    account_deployment_data,
+    nonce_data_availability_mode,
+    fee_data_availability_mode,
   },
-  sender_address: contract_address,
-  calldata,
-  max_fee,
-  version: version1,
-  signature,
-  nonce,
+  placeholder: "INVOKE V3",
 };
 
-const BROADCASTED_INVOKE_TXN = INVOKE_TXN_V1;
+const BROADCASTED_INVOKE_TXN = {
+  placeholder: "INVOKE V1",
+  index: 0,
+  description: "The type of the transaction",
+  oneOf: [BROADCASTED_INVOKE_V1_TXN, BROADCASTED_INVOKE_V3_TXN],
+};
+
+const BROADCASTED_DECLARE_V2_TXN = {
+  name: "DECLARE V2",
+  fields: {
+    sender_address: contract_address,
+    compiled_class_hash: class_hash,
+    max_fee,
+    signature: signature_declare,
+    nonce,
+  },
+  placeholder: "DECLARE V2",
+};
+
+const BROADCASTED_DECLARE_V3_TXN = {
+  name: "DECLARE V3",
+  fields: {
+    sender_address: contract_address,
+    compiled_class_hash: class_hash,
+    signature: signature_declare,
+    nonce,
+    resource_bounds_l1_gas_max_amount,
+    resource_bounds_l1_gas_max_price_per_unit,
+    resource_bounds_l2_gas_max_amount,
+    resource_bounds_l2_gas_max_price_per_unit,
+    tip,
+    paymaster_data,
+    account_deployment_data,
+    nonce_data_availability_mode,
+    fee_data_availability_mode,
+  },
+  placeholder: "DECLARE V3",
+};
+
+const BROADCASTED_DECLARE_TXN = {
+  placeholder: "DECLARE V2",
+  index: 0,
+  description: "The type of the transaction",
+  oneOf: [BROADCASTED_DECLARE_V2_TXN, BROADCASTED_DECLARE_V3_TXN],
+};
+
+const BROADCASTED_DEPLOY_ACCOUNT_V1_TXN = {
+  name: "DEPLOY_ACCOUNT V1",
+  fields: {
+    max_fee,
+    signature: signature_deploy_account,
+    nonce,
+    contract_address_salt,
+    constructor_calldata,
+    class_hash,
+  },
+  placeholder: "DEPLOY_ACCOUNT V1",
+};
+
+const BROADCASTED_DEPLOY_ACCOUNT_V3_TXN = {
+  name: "DEPLOY_ACCOUNT V3",
+  fields: {
+    signature: signature_deploy_account,
+    nonce,
+    contract_address_salt,
+    constructor_calldata,
+    class_hash,
+    resource_bounds_l1_gas_max_amount,
+    resource_bounds_l1_gas_max_price_per_unit,
+    resource_bounds_l2_gas_max_amount,
+    resource_bounds_l2_gas_max_price_per_unit,
+    tip,
+    paymaster_data,
+    nonce_data_availability_mode,
+    fee_data_availability_mode,
+  },
+  placeholder: "DEPLOY_ACCOUNT V3",
+};
+
+const BROADCASTED_DEPLOY_ACCOUNT_TXN = {
+  placeholder: "DEPLOY_ACCOUNT V1",
+  index: 0,
+  description: "The type of the transaction",
+  oneOf: [BROADCASTED_DEPLOY_ACCOUNT_V1_TXN, BROADCASTED_DEPLOY_ACCOUNT_V3_TXN],
+};
 
 const BROADCASTED_TXN = {
-  placeholder: "INVOKE_V1",
+  placeholder: "INVOKE V1",
   index: 0,
   description: "The type of the transaction",
   oneOf: [
-    {
-      name: "INVOKE_V1",
-      fields: {
-        sender_address: contract_address,
-        calldata,
-        max_fee,
-        signature,
-        nonce,
-      },
-      placeholder: "INVOKE_V1",
-    },
-    {
-      name: "INVOKE_V3",
-      fields: {
-        sender_address: contract_address,
-        calldata,
-        signature,
-        nonce,
-        resource_bounds_l1_gas_max_amount,
-        resource_bounds_l1_gas_max_price_per_unit,
-        resource_bounds_l2_gas_max_amount,
-        resource_bounds_l2_gas_max_price_per_unit,
-        tip,
-        paymaster_data,
-        account_deployment_data,
-        nonce_data_availability_mode,
-        fee_data_availability_mode,
-      },
-      placeholder: "INVOKE_V3",
-    },
-    {
-      name: "DECLARE_V2",
-      fields: {
-        sender_address: contract_address,
-        compiled_class_hash: class_hash,
-        max_fee,
-        signature,
-        nonce,
-      },
-      placeholder: "DECLARE_V2",
-    },
-    {
-      name: "DECLARE_V3",
-      fields: {
-        sender_address: contract_address,
-        compiled_class_hash: class_hash,
-        signature,
-        nonce,
-        resource_bounds_l1_gas_max_amount,
-        resource_bounds_l1_gas_max_price_per_unit,
-        resource_bounds_l2_gas_max_amount,
-        resource_bounds_l2_gas_max_price_per_unit,
-        tip,
-        paymaster_data,
-        account_deployment_data,
-        nonce_data_availability_mode,
-        fee_data_availability_mode,
-      },
-      placeholder: "DECLARE_V3",
-    },
-    {
-      name: "DEPLOY_ACCOUNT_V1",
-      fields: {
-        max_fee,
-        signature,
-        nonce,
-        contract_address_salt,
-        constructor_calldata,
-        class_hash,
-      },
-      placeholder: "DEPLOY_ACCOUNT_V1",
-    },
-    {
-      name: "DEPLOY_ACCOUNT_V3",
-      fields: {
-        signature,
-        nonce,
-        contract_address_salt,
-        constructor_calldata,
-        class_hash,
-        resource_bounds_l1_gas_max_amount,
-        resource_bounds_l1_gas_max_price_per_unit,
-        resource_bounds_l2_gas_max_amount,
-        resource_bounds_l2_gas_max_price_per_unit,
-        tip,
-        paymaster_data,
-        nonce_data_availability_mode,
-        fee_data_availability_mode,
-      },
-      placeholder: "DEPLOY_ACCOUNT_V3",
-    },
+    BROADCASTED_INVOKE_V1_TXN,
+    BROADCASTED_INVOKE_V3_TXN,
+    BROADCASTED_DECLARE_V2_TXN,
+    BROADCASTED_DECLARE_V3_TXN,
+    BROADCASTED_DEPLOY_ACCOUNT_V1_TXN,
+    BROADCASTED_DEPLOY_ACCOUNT_V3_TXN,
   ],
 };
-
-const DEPLOY_ACCOUNT_TXN_V1 = {
-  type: {
-    placeholder: "DEPLOY_ACCOUNT",
-    description: "The type of the transaction",
-  },
-  max_fee,
-  version: version1,
-  signature: {
-    placeholder: [
-      "0xd96bc7affb5648b601ddb49e9fd23f6ebfe59375e2ce5dd06b7db638d21b71",
-      "0x6582c1512c8515254a52deb5fef1320d4f5dd0cb8352b260a4e7a90c61510ba",
-      "0x5dec330eebf36c8672b60db4a718d44762d3ae6d1333e553197acb47ee5a062",
-      "0x0",
-      "0x0",
-      "0x0",
-      "0x0",
-      "0x0",
-      "0x0",
-      "0x0",
-    ],
-    description: "A transaction signature",
-    type: "Array",
-  },
-  nonce,
-  contract_address_salt: {
-    placeholder:
-      "0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c",
-    description: "The salt for the address of the deployed contract",
-  },
-  constructor_calldata: {
-    placeholder: [
-      "0x5aa23d5bb71ddaa783da7ea79d405315bafa7cf0387a74f4593578c3e9e6570",
-      "0x2dd76e7ad84dbed81c314ffe5e7a7cacfb8f4836f01af4e913f275f89a3de1a",
-      "0x1",
-      "0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c",
-    ],
-    description: "The parameters passed to the constructor",
-  },
-  class_hash,
-};
-
-const BROADCASTED_DEPLOY_ACCOUNT_TXN = DEPLOY_ACCOUNT_TXN_V1;
 
 const ReadMethods = [
   // Returns the version of the Starknet JSON-RPC specification being used
@@ -1252,18 +1233,59 @@ const WriteMethods = [
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  core::types::{
+    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3,
   },
-
-  //   // Submit a new class declaration transaction
-  //   {
-  //     name: "starknet_addDeclareTransaction",
-  //     // params: {
-  //     //   declare_transaction: BROADCASTED_DECLARE_TXN,
-  //     // },
-  //     starknetJs: ``,
-  //   },
-
+  macros::felt,
+  providers::{
+      jsonrpc::{HttpTransport, JsonRpcClient},
+      Provider, Url,
+  },
+};
+    
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+    
+  let result = provider
+    .add_invoke_transaction(
+      BroadcastedInvokeTransaction::V1(
+        BroadcastedInvokeTransactionV1 {
+          sender_address: felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),
+          calldata: vec![],
+          max_fee: felt!("0x0"),
+          signature: vec![
+            felt!("0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98"),
+            felt!("0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af")
+          ],
+          nonce: felt!("0x0"),
+          is_query: false
+        }
+      )
+    )
+    .await;
+  match result {
+    Ok(invoke_transaction_result) => {
+      println!("{invoke_transaction_result:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
+  },
+  // Submit a new class declaration transaction
+  /* {
+    name: "starknet_addDeclareTransaction",
+    params: {
+      declare_transaction: BROADCASTED_DECLARE_TXN,
+    },
+    starknetJs: ``,
+  }, */
   // Submit a new deploy account transaction
   {
     name: "starknet_addDeployAccountTransaction",
@@ -1272,7 +1294,64 @@ const WriteMethods = [
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  core::types::{
+    BroadcastedDeployAccountTransaction, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
+  },
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider
+    .add_deploy_account_transaction(
+      BroadcastedDeployAccountTransaction::V1(
+        BroadcastedDeployAccountTransactionV1 {
+          max_fee: felt!("0x0"),
+          signature: vec![
+            felt!("0xd96bc7affb5648b601ddb49e9fd23f6ebfe59375e2ce5dd06b7db638d21b71"),
+            felt!("0x6582c1512c8515254a52deb5fef1320d4f5dd0cb8352b260a4e7a90c61510ba"),
+            felt!("0x5dec330eebf36c8672b60db4a718d44762d3ae6d1333e553197acb47ee5a062"),
+            felt!("0x0"),
+            felt!("0x0"),
+            felt!("0x0"),
+            felt!("0x0"),
+            felt!("0x0"),
+            felt!("0x0"),
+            felt!("0x0")
+          ],
+          nonce: felt!("0x0"),
+          contract_address_salt: felt!("0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c"),
+          constructor_calldata: vec![
+            felt!("0x5aa23d5bb71ddaa783da7ea79d405315bafa7cf0387a74f4593578c3e9e6570"),
+            felt!("0x2dd76e7ad84dbed81c314ffe5e7a7cacfb8f4836f01af4e913f275f89a3de1a"),
+            felt!("0x1"),
+            felt!("0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c")
+          ],
+          class_hash: felt!("0x3131fa018d520a037686ce3efddeab8f28895662f019ca3ca18a626650f7d1e"),
+          is_query: false
+        }
+      )
+    )
+    .await;
+  match result {
+    Ok(deploy_account_transaction_result) => {
+      println!("{deploy_account_transaction_result:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 ];
 

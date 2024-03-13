@@ -5,7 +5,8 @@ export enum Chain {
 }
 
 export type BroadcastedInvokeTransactionV1 = {
-  type: "INVOKE_V1";
+  type: "INVOKE";
+  version: "0x1";
   sender_address: string;
   calldata: string[];
   max_fee: string;
@@ -15,7 +16,8 @@ export type BroadcastedInvokeTransactionV1 = {
 };
 
 export type BroadcastedInvokeTransactionV3 = {
-  type: "INVOKE_V3";
+  type: "INVOKE";
+  version: "0x3";
   sender_address: string;
   calldata: string[];
   signature: string[];
@@ -33,7 +35,8 @@ export type BroadcastedInvokeTransactionV3 = {
 };
 
 export type BroadcastedDeclareTransactionV2 = {
-  type: "DECLARE_V2";
+  type: "DECLARE";
+  version: "0x2";
   sender_address: string;
   compiled_class_hash: string;
   max_fee: string;
@@ -43,7 +46,8 @@ export type BroadcastedDeclareTransactionV2 = {
 };
 
 export type BroadcastedDeclareTransactionV3 = {
-  type: "DECLARE_V3";
+  type: "DECLARE";
+  version: "0x3";
   sender_address: string;
   compiled_class_hash: string;
   signature: string[];
@@ -61,7 +65,8 @@ export type BroadcastedDeclareTransactionV3 = {
 };
 
 export type BroadcastedDeployAccountTransactionV1 = {
-  type: "DEPLOY_ACCOUNT_V1";
+  type: "DEPLOY_ACCOUNT";
+  version: "0x1";
   max_fee: string;
   signature: string[];
   nonce: string;
@@ -72,7 +77,8 @@ export type BroadcastedDeployAccountTransactionV1 = {
 };
 
 export type BroadcastedDeployAccountTransactionV3 = {
-  type: "DEPLOY_ACCOUNT_V3";
+  type: "DEPLOY_ACCOUNT";
+  version: "0x3";
   signature: string[];
   nonce: string;
   contract_address_salt: string;
