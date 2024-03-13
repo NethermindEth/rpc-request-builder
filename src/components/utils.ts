@@ -270,34 +270,32 @@ const formatBroadcastedDeployAccountTransactionV1 = (
 const formatBroadcastedDeployAccountTransactionV3 = (
   transaction: BroadcastedDeployAccountTransactionV3
 ) => `BroadcastedDeployAccountTransaction::V3(
-          BroadcastedDeployAccountTransactionV3 {
-            signature: vec![${transaction.signature
-              .map((sig) => `felt!("${sig}")`)
-              .join(", ")}],
-            nonce: felt!("${transaction.nonce}"),
-            contract_address_salt: felt!("${
-              transaction.contract_address_salt
-            }"),
-            constructor_calldata: vec![${transaction.constructor_calldata
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            class_hash: felt!("${transaction.class_hash}"),
-            resource_bounds: resource_bounds: ${formatResourceBounds(
-              transaction
-            )},
-            tip: ${transaction.tip},
-            paymaster_data: vec![${transaction.paymaster_data
-              .map((data) => `felt!("${data}")`)
-              .join(", ")}],
-            nonce_data_availability_mode: DataAvailabilityMode::${
-              transaction.nonce_data_availability_mode
-            },
-            fee_data_availability_mode: DataAvailabilityMode::${
-              transaction.fee_data_availability_mode
-            },
-            is_query: ${transaction.is_query}
-          }
-        )`;
+            BroadcastedDeployAccountTransactionV3 {
+              signature: vec![${transaction.signature
+                .map((sig) => `felt!("${sig}")`)
+                .join(", ")}],
+              nonce: felt!("${transaction.nonce}"),
+              contract_address_salt: felt!("${
+                transaction.contract_address_salt
+              }"),
+              constructor_calldata: vec![${transaction.constructor_calldata
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              class_hash: felt!("${transaction.class_hash}"),
+              resource_bounds: ${formatResourceBounds(transaction)},
+              tip: ${transaction.tip},
+              paymaster_data: vec![${transaction.paymaster_data
+                .map((data) => `felt!("${data}")`)
+                .join(", ")}],
+              nonce_data_availability_mode: DataAvailabilityMode::${
+                transaction.nonce_data_availability_mode
+              },
+              fee_data_availability_mode: DataAvailabilityMode::${
+                transaction.fee_data_availability_mode
+              },
+              is_query: ${transaction.is_query}
+            }
+          )`;
 
 export const formatStarknetRsParamsInvokeTransaction = (
   transaction: BroadcastedInvokeTransactionV1 | BroadcastedInvokeTransactionV3
