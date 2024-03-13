@@ -280,6 +280,7 @@ const BROADCASTED_DECLARE_V3_TXN = {
   name: "DECLARE V3",
   fields: {
     sender_address: contract_address,
+    compiled_class_hash: class_hash,
     signature: signature_declare,
     nonce,
     resource_bounds_l1_gas_max_amount,
