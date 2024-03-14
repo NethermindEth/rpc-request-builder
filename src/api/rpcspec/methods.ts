@@ -1291,7 +1291,7 @@ async fn main() {
 use starknet::{
   core::types::{
     contract::SierraClass, FieldElement,
-    BroadcastedDeclareTransaction, BroadcastedInvokeTransactionV2, BroadcastedDeclareTransactionV3,
+    BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
     DataAvailabilityMode, ResourceBoundsMapping, ResourceBounds
   },
   macros::felt,
