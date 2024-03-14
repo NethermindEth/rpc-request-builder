@@ -976,7 +976,7 @@ use starknet::{
     BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3,
     BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
     BroadcastedDeployAccountTransaction, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
-    DataAvailabilityMode, ResourceBoundsMapping, ResourceBounds, SimulationFlag
+    DataAvailabilityMode, ResourceBoundsMapping, ResourceBounds, SimulationFlag, SimulationFlagForEstimateFee
   },
   macros::felt,
   providers::{
