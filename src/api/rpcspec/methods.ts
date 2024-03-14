@@ -1307,9 +1307,6 @@ async fn main() {
   let contract_artifact: SierraClass =
     serde_json::from_reader(std::fs::File::open("/path/to/contract/artifact.json").unwrap())
     .unwrap();
-  // Class hash of the compiled CASM class from the "starknet-sierra-compile" command
-  let compiled_class_hash =
-    FieldElement::from_hex_be("COMPILED_CASM_CLASS_HASH_IN_HEX_HERE").unwrap();
   // We need to flatten the ABI into a string first
   let flattened_class = contract_artifact.flatten().unwrap();
 
