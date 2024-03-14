@@ -23,9 +23,11 @@ import {
   extractNodeUrl,
   formatRawParams,
   formatStarknetRsParamsBlockId,
+  formatStarknetRsParamsFunctionCall,
   formatStarknetRsParamsInvokeTransaction,
   formatStarknetRsParamsDeclareTransaction,
   formatStarknetRsParamsDeployAccountTransaction,
+  formatStarknetRsParamsMsgFromL1,
   formatStarknetRsParamsTransactions,
   cleanTransaction,
   formatStarknetRsParamsSimulationFlags,
@@ -416,6 +418,18 @@ const Builder = () => {
             ([key, value]) => {
               if (key === "block_id") {
                 return formatStarknetRsParamsBlockId(value);
+              } else if (key === "request") {
+                if (Array.isArray(value)) {
+                  return formatStarknetRsParamsTransactions(
+                    value.map((t: any) => ({
+                      ...cleanTransaction(t),
+                      is_query: true,
+                    }))
+                  );
+                }
+                return formatStarknetRsParamsFunctionCall(value);
+              } else if (key === "message") {
+                return formatStarknetRsParamsMsgFromL1(value);
               } else if (key === "invoke_transaction") {
                 return formatStarknetRsParamsInvokeTransaction({
                   ...cleanTransaction(value),
@@ -439,7 +453,10 @@ const Builder = () => {
                   }))
                 );
               } else if (key === "simulation_flags") {
-                return formatStarknetRsParamsSimulationFlags(value);
+                return formatStarknetRsParamsSimulationFlags(
+                  value,
+                  methodName === "estimate_fee"
+                );
               } else if (typeof value === "object" && !Array.isArray(value)) {
                 // If value is an object, return its stringified values
                 return Object.values(value).map((val) => {

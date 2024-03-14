@@ -1,4 +1,5 @@
 import {
+  FunctionCall,
   BroadcastedTransaction,
   BroadcastedInvokeTransactionV1,
   BroadcastedInvokeTransactionV3,
@@ -6,6 +7,7 @@ import {
   BroadcastedDeclareTransactionV3,
   BroadcastedDeployAccountTransactionV1,
   BroadcastedDeployAccountTransactionV3,
+  MsgFromL1,
 } from "./types";
 
 export const isUrlFromNethermindDomain = (url: string) => {
@@ -108,6 +110,16 @@ export const formatStarknetRsParamsBlockId = (
   }
   return "INVALID_BLOCK_ID";
 };
+
+export const formatStarknetRsParamsFunctionCall = (
+  functionCall: FunctionCall
+) => `FunctionCall {
+        contract_address: felt!("${functionCall.contract_address}"),
+        entry_point_selector: felt!("${functionCall.entry_point_selector}"),
+        calldata: vec![${functionCall.calldata
+          .map((data) => `felt!("${data}")`)
+          .join(", ")}],
+      }`;
 
 const formatStarknetRsParamsUint = (uint: string, size: string) =>
   `${size}::from_str_radix("${uint}".trim_start_matches("0x"), 16).unwrap()`;
@@ -363,7 +375,9 @@ export const formatStarknetRsParamsTransactions = (
     })
     .join(", ");
   return `
-      vec![${transactionsFormatted}]`;
+      vec![
+        ${transactionsFormatted}
+      ]`;
 };
 
 export const cleanTransaction = (t: any) => {
@@ -381,16 +395,21 @@ export const cleanTransaction = (t: any) => {
 };
 
 export const formatStarknetRsParamsSimulationFlags = (
-  simulationFlags: string[]
+  simulationFlags: string[],
+  estimateFee: boolean
 ) => {
   const simulationFlagsEnums = simulationFlags
     .map((simulationFlag) => {
       switch (simulationFlag) {
         case "SKIP_VALIDATE": {
-          return "SimulationFlag::SkipValidate";
+          return estimateFee
+            ? "SimulationFlagForEstimateFee::SkipValidate"
+            : "SimulationFlag::SkipValidate";
         }
         case "SKIP_FEE_CHARGE": {
-          return "SimulationFlag::SkipFeeCharge";
+          return estimateFee
+            ? "INVALID_SIMULATION_FLAG"
+            : "SimulationFlag::SkipFeeCharge";
         }
         default: {
           return;
@@ -401,6 +420,17 @@ export const formatStarknetRsParamsSimulationFlags = (
   return `
       vec![${simulationFlagsEnums}]`;
 };
+
+export const formatStarknetRsParamsMsgFromL1 = (
+  msgFromL1: MsgFromL1
+) => `MsgFromL1 {
+      from_address: EthAddress::from_hex("${msgFromL1.from_address}").unwrap(),
+      to_address: felt!("${msgFromL1.to_address}"),
+      entry_point_selector: felt!("${msgFromL1.entry_point_selector}"),
+      payload: vec![${msgFromL1.payload
+        .map((data) => `felt!("${data}")`)
+        .join(", ")}],
+    }`;
 
 export const toCamelCase = (str: string) => {
   return str.replace(/_([a-z])/g, function (match, letter) {

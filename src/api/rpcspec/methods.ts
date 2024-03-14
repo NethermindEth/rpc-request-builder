@@ -76,6 +76,14 @@ const block_id = {
   ],
 };
 
+const simulation_flags = [
+  {
+    placeholder: "SKIP_VALIDATE",
+    description:
+      "Flags that indicate how to simulate a given transaction. By default, the sequencer behavior is replicated locally",
+  },
+];
+
 const contract_address = {
   placeholder:
     "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
@@ -222,7 +230,6 @@ const constructor_calldata = {
     "0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c",
   ],
   description: "The parameters passed to the constructor",
-  type: "Array",
 };
 
 const BROADCASTED_INVOKE_V1_TXN = {
@@ -914,26 +921,116 @@ async fn main() {
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  core::types::{FunctionCall, BlockId, BlockTag},
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider
+    .call(
+      FunctionCall {
+        contract_address: felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),
+        entry_point_selector: felt!("0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"),
+        calldata: vec![],
+      },
+      BlockId::Tag(BlockTag::Latest),
+    )
+    .await;
+  match result {
+    Ok(call_result) => {
+      println!("{call_result:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 
   // Estimate the fee for StarkNet transactions
   {
     name: "starknet_estimateFee",
     params: {
-      request: [BROADCASTED_INVOKE_TXN], //TODO:
-      simulation_flags: [
-        {
-          placeholder: "SKIP_VALIDATE",
-          description:
-            "Flags that indicate how to simulate a given transaction. By default, the sequencer behavior is replicated locally",
-        },
-      ],
+      request: [BROADCASTED_TXN],
+      simulation_flags,
       block_id,
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use std::sync::Arc;
+
+use starknet::{
+  core::types::{
+    contract::SierraClass, FieldElement, BlockId, BlockTag, BroadcastedTransaction,
+    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3,
+    BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
+    BroadcastedDeployAccountTransaction, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
+    DataAvailabilityMode, ResourceBoundsMapping, ResourceBounds, SimulationFlag, SimulationFlagForEstimateFee
+  },
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  // Sierra class artifact. Output of the "starknet-compile" command
+  let contract_artifact: SierraClass =
+    serde_json::from_reader(std::fs::File::open("/path/to/contract/artifact.json").unwrap())
+    .unwrap();
+  // We need to flatten the ABI into a string first
+  let flattened_class = contract_artifact.flatten().unwrap();
+
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider
+    .estimate_fee(
+      vec![
+        BroadcastedTransaction::Invoke(
+          BroadcastedInvokeTransaction::V1(
+            BroadcastedInvokeTransactionV1 {
+              sender_address: felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),
+              calldata: vec![],
+              max_fee: felt!("0x0"),
+              signature: vec![
+                felt!("0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98"),
+                felt!("0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af")
+              ],
+              nonce: felt!("0x0"),
+              is_query: true
+            }
+          )
+        )
+      ],
+      vec![SimulationFlagForEstimateFee::SkipValidate],
+      BlockId::Tag(BlockTag::Latest)
+    )
+    .await;
+  match result {
+    Ok(fee_estimate) => {
+      println!("{fee_estimate:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 
   // Estimate the L2 fee of a message sent on L1
@@ -954,7 +1051,42 @@ async fn main() {
     },
     starknetJs: ``,
     starknetGo: ``,
-    starknetRs: ``,
+    starknetRs: `use starknet::{
+  core::types::{BlockId, BlockTag, MsgFromL1, EthAddress},
+  macros::felt,
+  providers::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    Provider, Url,
+  },
+};
+
+#[tokio::main]
+async fn main() {
+  let provider = JsonRpcClient::new(HttpTransport::new(
+    Url::parse("https://free-rpc.nethermind.io/mainnet-juno/").unwrap(),
+  ));
+
+  let result = provider
+    .estimate_message_fee(
+      MsgFromL1 {
+        from_address: EthAddress::from_hex("0xc662c410c0ecf747543f5ba90660f6abebd9c8c4").unwrap(),
+        to_address: felt!("0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"),
+        entry_point_selector: felt!("0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"),
+        payload: vec![]
+      },
+      BlockId::Tag(BlockTag::Latest),
+    )
+    .await;
+  match result {
+    Ok(fee_estimate) => {
+      println!("{fee_estimate:#?}");
+    }
+    Err(err) => {
+      eprintln!("Error: {err}");
+    }
+  }
+}
+`,
   },
 
   // Get the most recent accepted block number

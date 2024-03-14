@@ -4,6 +4,12 @@ export enum Chain {
   Sepolia,
 }
 
+export type FunctionCall = {
+  contract_address: string;
+  entry_point_selector: string;
+  calldata: string[];
+};
+
 export type BroadcastedInvokeTransactionV1 = {
   type: "INVOKE";
   version: "0x1";
@@ -102,3 +108,10 @@ export type BroadcastedTransaction =
   | BroadcastedDeclareTransactionV3
   | BroadcastedDeployAccountTransactionV1
   | BroadcastedDeployAccountTransactionV3;
+
+export type MsgFromL1 = {
+  from_address: string;
+  to_address: string;
+  entry_point_selector: string;
+  payload: string[];
+};
