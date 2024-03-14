@@ -42,7 +42,7 @@ const formatName = (name: string) => {
 const Builder = () => {
   const transformParamsToArray = (params: any) => {
     const transformParam = (param: any): any => {
-      if (param.description || param.placeholder) {
+      if (param.description !== undefined || param.placeholder !== undefined) {
         if (param.oneOf) {
           return {
             description: param.description,
@@ -61,7 +61,10 @@ const Builder = () => {
             placeholder: param.placeholder,
           };
         }
-      } else if (!param.placeholder && !param.description) {
+      } else if (
+        param.placeholder === undefined &&
+        param.description === undefined
+      ) {
         let params = {};
         for (const [key, value] of Object.entries(param)) {
           params = {
@@ -554,7 +557,7 @@ const Builder = () => {
     placeholderType: string
   ) => {
     if (typeof placeholder === "number") {
-      return parseInt(newValue);
+      return newValue === "0x" ? 0 : parseInt(newValue);
     } else if (
       Array.isArray(placeholder) ||
       (placeholderType && placeholderType === "Array")
@@ -744,7 +747,7 @@ const Builder = () => {
                   />
                 ) : (
                   <div>
-                    {!value.placeholder && value.value ? (
+                    {value.placeholder === undefined && value.value ? (
                       <FormatInputField
                         param={value}
                         index={index}
