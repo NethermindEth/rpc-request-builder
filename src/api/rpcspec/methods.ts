@@ -46,6 +46,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+  "github.com/NethermindEth/juno/core/felt"
 	"github.com/NethermindEth/starknet.go/rpc"
 	"github.com/NethermindEth/starknet.go/utils"
 )
@@ -135,6 +136,7 @@ const signature_invoke = {
     "0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af",
   ],
   description: `A transaction signature (e.g. ["0x1", "0x2"])`,
+  type: "Array",
 };
 
 const signature_declare = {
@@ -1255,7 +1257,7 @@ async fn main() {
             ],
           ],
           description: "The key to the storage value for the given contract",
-          type: "array",
+          type: "Array",
         },
         continuation_token: {
           placeholder: "",
