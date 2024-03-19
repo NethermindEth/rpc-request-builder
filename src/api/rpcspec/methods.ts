@@ -145,6 +145,7 @@ const signature_declare = {
     "0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af",
   ],
   description: "A transaction signature",
+  type: "Array",
 };
 
 const signature_deploy_account = {
@@ -161,6 +162,7 @@ const signature_deploy_account = {
     "0x0",
   ],
   description: "A transaction signature",
+  type: "Array",
 };
 
 const nonce = {
