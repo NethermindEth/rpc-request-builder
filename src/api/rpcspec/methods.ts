@@ -522,6 +522,17 @@ async fn main() {
   `,
   },
 
+  // Get block information with full transactions and receipts given the block id
+  {
+    name: "starknet_getBlockWithReceipts",
+    params: {
+      block_id,
+    },
+    starknetJs: ``,
+    starknetGo: ``,
+    starknetRs: ``,
+  },
+
   // Get the information about the result of executing the requested block
   {
     name: "starknet_getStateUpdate",
