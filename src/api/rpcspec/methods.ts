@@ -1378,7 +1378,24 @@ const WriteMethods = [
       invoke_transaction: BROADCASTED_INVOKE_TXN,
     },
     starknetJs: ``,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+  result,err = provider.AddInvokeTransaction(context.Background(),BroadcastedInvokeTransaction{
+    V1: &BroadcastedInvokeTransactionV1{
+        sender_address: "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
+        calldata: []byte{},
+        max_fee: "0x0",
+        signature: []string{"0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98","0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af"},
+        nonce: "0x0",
+        is_query: false,
+      },
+    },
+  )
+  if err != nil {
+    log.Fatal(err)
+  }
+    
+  fmt.Println("InvokeTransaction:", result)
+}`,
     starknetRs: `use starknet::{
   core::types::{
     BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3,
@@ -1497,7 +1514,26 @@ async fn main() {
       deploy_account_transaction: BROADCASTED_DEPLOY_ACCOUNT_TXN,
     },
     starknetJs: ``,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+  result, err = provider.AddDeployAccountTransaction(context.Background(), BroadcastedDeployAccountTransaction{
+    V1: &BroadcastedDeployAccountTransactionV1{
+        max_fee: "0x0",
+        signature: []string{"0xd96bc7affb5648b601ddb49e9fd23f6ebfe59375e2ce5dd06b7db638d21b71","0x6582c1512c8515254a52deb5fef1320d4f5dd0cb8352b260a4e7a90c61510ba","0x5dec330eebf36c8672b60db4a718d44762d3ae6d1333e553197acb47ee5a062","0x0","0x0","0x0","0x0","0x0","0x0","0x0"},
+        nonce: "0x0",
+        contract_address_salt: "0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c",
+        constructor_calldata: []byte{"0x5aa23d5bb71ddaa783da7ea79d405315bafa7cf0387a74f4593578c3e9e6570","0x2dd76e7ad84dbed81c314ffe5e7a7cacfb8f4836f01af4e913f275f89a3de1a","0x1","0x61fcdc5594c726dc437ddc763265853d4dce51a57e25ff1d97b3e31401c7f4c"},
+        class_hash: "0x3131fa018d520a037686ce3efddeab8f28895662f019ca3ca18a626650f7d1e",
+        is_query: false,
+      },
+    }
+  )
+  if err != nil {
+    log.Fatal(err)
+  }
+    
+  fmt.Println("DeployAccountTransaction:", result)
+}
+`,
     starknetRs: `use starknet::{
   core::types::{
     BroadcastedDeployAccountTransaction, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
