@@ -1378,7 +1378,24 @@ const WriteMethods = [
       invoke_transaction: BROADCASTED_INVOKE_TXN,
     },
     starknetJs: ``,
-    starknetGo: ``,
+    starknetGo: `${STARKNET_GO_PREFIX}
+  result,err = provider.AddInvokeTransaction(context.Background(),BroadcastedInvokeTransaction{
+    V1: &BroadcastedInvokeTransactionV1{
+        sender_address: "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
+        calldata: []byte{},
+        max_fee: "0x0",
+        signature: []string{"0x1d4231646034435917d3513cafd6e22ce3ca9a783357137e32b7f52827a9f98","0x61c0b5bae9710c514817c772146dd7509517d2c47fd9bf622370215485ee5af"},
+        nonce: "0x0",
+        is_query: false,
+      },
+    },
+  )
+  if err != nil {
+    log.Fatal(err)
+  }
+    
+  fmt.Println("InvokeTransaction:", result)
+}`,
     starknetRs: `use starknet::{
   core::types::{
     BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3,
