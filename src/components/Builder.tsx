@@ -85,15 +85,15 @@ const Builder = () => {
 
     return params
       ? Object.entries(params).flatMap(([name, value]) => {
-          if (Array.isArray(value)) {
-            let values = value.map((param: any) => {
-              return transformParam(param);
-            });
+        if (Array.isArray(value)) {
+          let values = value.map((param: any) => {
+            return transformParam(param);
+          });
 
-            return { name, value: values };
-          }
-          return { name, value: transformParam(value) };
-        })
+          return { name, value: values };
+        }
+        return { name, value: transformParam(value) };
+      })
       : [];
   };
 
@@ -125,12 +125,12 @@ const Builder = () => {
         requestTab == "raw"
           ? rawRequest
           : requestTab == "curl"
-          ? curlRequest
-          : requestTab === "starknetJs"
-          ? starknetJs
-          : requestTab === "starknetGo"
-          ? starknetGo
-          : starknetRs
+            ? curlRequest
+            : requestTab === "starknetJs"
+              ? starknetJs
+              : requestTab === "starknetGo"
+                ? starknetGo
+                : starknetRs
       );
     } else {
       navigator.clipboard.writeText(response);
@@ -216,8 +216,8 @@ const Builder = () => {
           (acc: ParamsObject, [key, value]) => {
             acc[key] = Array.isArray(value)
               ? value.map((val) =>
-                  constructParams(val, key === "entry_point_selector")
-                )
+                constructParams(val, key === "entry_point_selector")
+              )
               : constructParams(value, key === "entry_point_selector");
             return acc;
           },
@@ -1094,7 +1094,20 @@ const Builder = () => {
                     <>
                       {param.value.map((option: any, ind: number) => (
                         <div className="mt-3" key={ind}>
-                          <p>Option {ind}</p>
+                          <div className="flex flex-row-reverse ">
+                          {param.value.length > 1 &&
+                            <div className="">
+                              <button className="text-lg text-red-400 mr-1" onClick={() => {
+                                setParamsArray((prevParamsArray) => {
+                                  const updatedParamsArray = structuredClone(prevParamsArray)
+                                  const updatedParamsArray2 = structuredClone(prevParamsArray)
+                                  updatedParamsArray[index].value.splice(ind, 1)
+                                  return updatedParamsArray;
+                                })
+                              }} >X</button>
+                            </div>
+                          }
+                            <p className="w-full content-center">Option {ind}</p> </div>
                           <FormatInputField
                             param={option}
                             index={index}
