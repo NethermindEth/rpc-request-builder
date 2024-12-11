@@ -934,7 +934,9 @@ async fn main() {
       request: functionCall,
       block_id,
     },
-    starknetJs: ``,
+    starknetJs: `${STARKNET_JS_PREFIX}provider.callContract({contractAddress: "0x124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",entrypoint: 'name',calldata: []}).then(response => {
+           console.log(response);
+       });`,
     starknetGo: ``,
     starknetRs: `use starknet::{
   core::types::{FunctionCall, BlockId, BlockTag},
